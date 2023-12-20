@@ -3,11 +3,11 @@ title: SHOW CREATE DATABASE
 summary: An overview of the use of SHOW CREATE DATABASE in the TiDB database.
 ---
 
-# 表示 データベースの作成 {#show-create-database}
+# SHOW CREATE DATABASE {#show-create-database}
 
-`SHOW CREATE DATABASE`は、既存のデータベースを再作成するための正確な SQL ステートメントを示すために使用されます。 `SHOW CREATE SCHEMA`はその同義語です。
+`SHOW CREATE DATABASE` is used to show the exact SQL statement for re-creating an existing database. `SHOW CREATE SCHEMA` is a synonym for it.
 
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
 **ShowCreateDatabaseStmt:**
 
@@ -16,7 +16,7 @@ ShowCreateDatabaseStmt ::=
     "SHOW" "CREATE" "DATABASE" | "SCHEMA" ("IF" "NOT" "EXISTS")? DBName
 ```
 
-## 例 {#examples}
+## Examples {#examples}
 
 ```sql
 CREATE DATABASE test;
@@ -52,13 +52,13 @@ SHOW CREATE SCHEMA IF NOT EXISTS test;
 1 row in set (0.00 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-`SHOW CREATE DATABASE`は MySQL と完全な互換性があることが期待されています。互換性の違いを見つけた場合は、 GitHub [問題](https://github.com/pingcap/tidb/issues/new/choose)を送信してください。
+`SHOW CREATE DATABASE` is expected to be fully compatible with MySQL. If you find any compatibility differences, you can [report a bug](https://docs.pingcap.com/tidb/stable/support).
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [テーブルの作成](/sql-statements/sql-statement-create-table.md)
--   [ドロップテーブル](/sql-statements/sql-statement-drop-table.md)
--   [テーブルを表示](/sql-statements/sql-statement-show-tables.md)
--   [次の列を表示](/sql-statements/sql-statement-show-columns-from.md)
+-   [CREATE TABLE](/sql-statements/sql-statement-create-table.md)
+-   [DROP TABLE](/sql-statements/sql-statement-drop-table.md)
+-   [SHOW TABLES](/sql-statements/sql-statement-show-tables.md)
+-   [SHOW COLUMNS FROM](/sql-statements/sql-statement-show-columns-from.md)

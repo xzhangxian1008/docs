@@ -3,17 +3,17 @@ title: SHOW WARNINGS | TiDB SQL Statement Reference
 summary: An overview of the usage of SHOW WARNINGS for the TiDB database.
 ---
 
-# 警告を表示 {#show-warnings}
+# SHOW WARNINGS {#show-warnings}
 
-このステートメントは、現在のクライアント接続で以前に実行されたステートメントに対して発生した警告のリストを表示します。 MySQL と同様に、 `sql_mode`どのステートメントがエラーと警告を引き起こすかに大きく影響します。
+This statement shows a list of warnings that occurred for previously executed statements in the current client connection. As in MySQL, the `sql_mode` impacts which statements will cause errors vs. warnings considerably.
 
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
-**警告メッセージの表示:**
+**ShowWarningsStmt:**
 
 ![ShowWarningsStmt](/media/sqlgram/ShowWarningsStmt.png)
 
-## 例 {#examples}
+## Examples {#examples}
 
 ```sql
 mysql> CREATE TABLE t1 (a INT UNSIGNED);
@@ -73,10 +73,10 @@ mysql> SELECT * FROM t1;
 
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-TiDB の`SHOW WARNINGS`ステートメントは MySQL と完全な互換性があります。互換性の違いを見つけた場合は、 [GitHub の問題](https://github.com/pingcap/tidb/issues/new/choose)を介して報告してください。
+The `SHOW WARNINGS` statement in TiDB is fully compatible with MySQL. If you find any compatibility differences, [report a bug](https://docs.pingcap.com/tidb/stable/support).
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [エラーを表示](/sql-statements/sql-statement-show-errors.md)
+-   [SHOW ERRORS](/sql-statements/sql-statement-show-errors.md)

@@ -5,9 +5,9 @@ summary: An overview of the usage of REVOKE <role> for the TiDB database.
 
 # <code>REVOKE &#x3C;role></code> {#code-revoke-x3c-role-code}
 
-このステートメントは、指定されたユーザー (またはユーザーのリスト) から以前に割り当てられたロールを削除します。
+This statement removes a previously assigned role from a specified user (or list of users).
 
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
 ```ebnf+diagram
 RevokeRoleStmt ::=
@@ -20,15 +20,15 @@ UsernameList ::=
     Username ( ',' Username )*
 ```
 
-## 例 {#examples}
+## Examples {#examples}
 
-`root`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `root` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u root
 ```
 
-新しいロール`analyticsteam`と新しいユーザー`jennifer`を作成します。
+Create a new role `analyticsteam` and a new user `jennifer`:
 
 ```sql
 CREATE ROLE analyticsteam;
@@ -44,13 +44,13 @@ GRANT analyticsteam TO jennifer;
 Query OK, 0 rows affected (0.01 sec)
 ```
 
-`jennifer`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `jennifer` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u jennifer
 ```
 
-デフォルトでは、 `analyticsteam`ロールに関連付けられた権限を使用できるようにするには、 `jennifer` `SET ROLE analyticsteam`実行する必要があることに注意してください。
+Note that by default `jennifer` needs to execute `SET ROLE analyticsteam` in order to be able to use the privileges associated with the `analyticsteam` role:
 
 ```sql
 SHOW GRANTS;
@@ -86,26 +86,26 @@ SHOW TABLES IN test;
 1 row in set (0.00 sec)
 ```
 
-`root`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `root` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u root
 ```
 
-ステートメント`SET DEFAULT ROLE`使用して、ロール`analyticsteam`を`jennifer`に関連付けることができます。
+The statement `SET DEFAULT ROLE` can be used to associate the role `analyticsteam` to `jennifer`:
 
 ```sql
 SET DEFAULT ROLE analyticsteam TO jennifer;
 Query OK, 0 rows affected (0.02 sec)
 ```
 
-`jennifer`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `jennifer` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u jennifer
 ```
 
-この後、ユーザー`jennifer`はロール`analyticsteam`に関連付けられた権限を持ち、ユーザー`jennifer`はステートメント`SET ROLE`を実行する必要がなくなります。
+After this, the user `jennifer` has the privileges associated with the role `analyticsteam` and `jennifer` does not have to execute the statement `SET ROLE`:
 
 ```sql
 SHOW GRANTS;
@@ -127,26 +127,26 @@ SHOW TABLES IN test;
 1 row in set (0.00 sec)
 ```
 
-`root`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `root` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u root
 ```
 
-Analyticsteam の役割を`jennifer`から取り消します。
+Revoke the role of analyticsteam from `jennifer`:
 
 ```sql
 REVOKE analyticsteam FROM jennifer;
 Query OK, 0 rows affected (0.01 sec)
 ```
 
-`jennifer`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `jennifer` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u jennifer
 ```
 
-`jennifer`の権限を表示します。
+Show the privileges of `jennifer`:
 
 ```sql
 SHOW GRANTS;
@@ -158,11 +158,11 @@ SHOW GRANTS;
 1 row in set (0.00 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-TiDB の`REVOKE <role>`ステートメントは、MySQL 8.0 のロール機能と完全な互換性があります。互換性の違いを見つけた場合は、 [GitHub の問題](https://github.com/pingcap/tidb/issues/new/choose)を介して報告してください。
+The `REVOKE <role>` statement in TiDB is fully compatible with the roles feature in MySQL 8.0. If you find any compatibility differences, [report a bug](https://docs.pingcap.com/tidb/stable/support).
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
 -   [`CREATE ROLE`](/sql-statements/sql-statement-create-role.md)
 -   [`DROP ROLE`](/sql-statements/sql-statement-drop-role.md)
@@ -172,6 +172,6 @@ TiDB の`REVOKE <role>`ステートメントは、MySQL 8.0 のロール機能�
 
 <CustomContent platform="tidb">
 
--   [役割ベースのアクセス制御](/role-based-access-control.md)
+-   [Role-Based Access Control](/role-based-access-control.md)
 
 </CustomContent>

@@ -3,66 +3,62 @@ title: Check Cluster Status
 summary: Learn how to check the running status of the TiDB cluster.
 ---
 
-# クラスタのステータスを確認する {#check-cluster-status}
+# Check Cluster Status {#check-cluster-status}
 
-TiDB クラスターをデプロイした後、クラスターが正常に実行されるかどうかを確認する必要があります。このドキュメントでは、 TiUPコマンド[TiDB ダッシュボード](/dashboard/dashboard-intro.md)および Grafana を使用してクラスターのステータスを確認する方法と、TiDB データベースにログインして簡単な SQL 操作を実行する方法を紹介します。
+After a TiDB cluster is deployed, you need to check whether the cluster runs normally. This document introduces how to check the cluster status using TiUP commands, [TiDB Dashboard](/dashboard/dashboard-intro.md) and Grafana, and how to log into the TiDB database to perform simple SQL operations.
 
-## TiDB クラスターのステータスを確認する {#check-the-tidb-cluster-status}
+## Check the TiDB cluster status {#check-the-tidb-cluster-status}
 
-このセクションでは、 TiUPコマンド、 [TiDB ダッシュボード](/dashboard/dashboard-intro.md) 、および Grafana を使用して TiDB クラスターのステータスを確認する方法について説明します。
+This section describes how to check the TiDB cluster status using TiUP commands, [TiDB Dashboard](/dashboard/dashboard-intro.md), and Grafana.
 
-### TiUPを使用する {#use-tiup}
+### Use TiUP {#use-tiup}
 
-`tiup cluster display <cluster-name>`コマンドを使用してクラスターのステータスを確認します。例えば：
-
-{{< copyable "" >}}
+Use the `tiup cluster display <cluster-name>` command to check the cluster status. For example:
 
 ```shell
 tiup cluster display tidb-test
 ```
 
-期待される出力: 各ノードの`Status`情報が`Up`の場合、クラスターは正常に実行されます。
+Expected output: If the `Status` information of each node is `Up`, the cluster runs normally.
 
-### TiDB ダッシュボードを使用する {#use-tidb-dashboard}
+### Use TiDB Dashboard {#use-tidb-dashboard}
 
-1.  `${pd-ip}:${pd-port}/dashboard`で TiDB ダッシュボードにログインします。ユーザー名とパスワードは TiDB `root`ユーザーのものと同じです。 `root`パスワードを変更した場合は、変更したパスワードを入力します。デフォルトではパスワードは空です。
+1.  Log in to TiDB Dashboard at `${pd-ip}:${pd-port}/dashboard`. The username and password is the same as that of the TiDB `root` user. If you have modified the `root` password, enter the modified password. The password is empty by default.
 
     ![TiDB-Dashboard](/media/tiup/tidb-dashboard.png)
 
-2.  ホームページには、TiDB クラスター内のノード情報が表示されます。
+2.  The home page displays the node information in the TiDB cluster.
 
     ![TiDB-Dashboard-status](/media/tiup/tidb-dashboard-status.png)
 
-### グラファナを使用する {#use-grafana}
+### Use Grafana {#use-grafana}
 
-1.  `${Grafana-ip}:3000`で Grafana モニタリングにログインします。デフォルトのユーザー名とパスワードは両方とも`admin`です。
+1.  Log in to the Grafana monitoring at `${Grafana-ip}:3000`. The default username and password are both `admin`.
 
-2.  TiDB ポートのステータスと負荷監視情報を確認するには、 **「概要」**をクリックします。
+2.  To check the TiDB port status and load monitoring information, click **Overview**.
 
     ![Grafana-overview](/media/tiup/grafana-overview.png)
 
-## データベースにログインして簡単な操作を行う {#log-in-to-the-database-and-perform-simple-operations}
+## Log in to the database and perform simple operations {#log-in-to-the-database-and-perform-simple-operations}
 
-> **ノート：**
+> **Note:**
 >
-> データベースにログインする前に、MySQL クライアントをインストールします。
+> Install the MySQL client before you log in to the database.
 
-次のコマンドを実行してデータベースにログインします。
-
-{{< copyable "" >}}
+Log in to the database by running the following command:
 
 ```shell
 mysql -u root -h ${tidb_server_host_IP_address} -P 4000
 ```
 
-`${tidb_server_host_IP_address}` [クラスタトポロジファイルを初期化します](/production-deployment-using-tiup.md#step-3-initialize-cluster-topology-file)のときに`tidb_servers`に設定される IP アドレスの 1 つです ( `10.0.1.7`など)。
+`${tidb_server_host_IP_address}` is one of the IP addresses set for `tidb_servers` when you [initialize the cluster topology file](/production-deployment-using-tiup.md#step-3-initialize-cluster-topology-file), such as `10.0.1.7`.
 
-次の情報は、ログインが成功したことを示します。
+The following information indicates successful login:
 
 ```sql
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 3
-Server version: 5.7.25-TiDB-v7.1.1 TiDB Server (Apache License 2.0) Community Edition, MySQL 5.7 compatible
+Server version: 5.7.25-TiDB-v7.1.2 TiDB Server (Apache License 2.0) Community Edition, MySQL 5.7 compatible
 Copyright (c) 2000, 2015, Oracle and/or its affiliates. All rights reserved.
 Oracle is a registered trademark of Oracle Corporation and/or its
 affiliates. Other names may be trademarks of their respective
@@ -71,17 +67,15 @@ owners.
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 ```
 
-### データベース操作 {#database-operations}
+### Database operations {#database-operations}
 
--   TiDB のバージョンを確認します。
-
-    {{< copyable "" >}}
+-   Check the version of TiDB:
 
     ```sql
     select tidb_version()\G
     ```
 
-    期待される出力:
+    Expected output:
 
     ```sql
     *************************** 1. row ***************************
@@ -97,37 +91,31 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
     1 row in set (0.00 sec)
     ```
 
--   `pingcap`という名前のデータベースを作成します。
-
-    {{< copyable "" >}}
+-   Create a database named `pingcap`:
 
     ```sql
     create database pingcap;
     ```
 
-    期待される出力:
+    Expected output:
 
     ```sql
     Query OK, 0 rows affected (0.10 sec)
     ```
 
-    `pingcap`データベースに切り替えます。
-
-    {{< copyable "" >}}
+    Switch to the `pingcap` database:
 
     ```sql
     use pingcap;
     ```
 
-    期待される出力:
+    Expected output:
 
     ```sql
     Database changed
     ```
 
--   `tab_tidb`という名前のテーブルを作成します。
-
-    {{< copyable "" >}}
+-   Create a table named `tab_tidb`:
 
     ```sql
     CREATE TABLE `tab_tidb` (
@@ -139,35 +127,31 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
     KEY `idx_age` (`age`));
     ```
 
-    期待される出力:
+    Expected output:
 
     ```sql
     Query OK, 0 rows affected (0.11 sec)
     ```
 
--   データを挿入します:
-
-    {{< copyable "" >}}
+-   Insert data:
 
     ```sql
     insert into `tab_tidb` values (1,'TiDB',5,'TiDB-v5.0.0');
     ```
 
-    期待される出力:
+    Expected output:
 
     ```sql
     Query OK, 1 row affected (0.03 sec)
     ```
 
--   `tab_tidb`のエントリをビュー。
-
-    {{< copyable "" >}}
+-   View the entries in `tab_tidb`:
 
     ```sql
     select * from tab_tidb;
     ```
 
-    期待される出力:
+    Expected output:
 
     ```sql
     +----+------+-----+-------------+
@@ -178,15 +162,13 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
     1 row in set (0.00 sec)
     ```
 
--   TiKV のストアの状態、 `store_id` 、容量、稼働時間をビュー。
-
-    {{< copyable "" >}}
+-   View the store state, `store_id`, capacity, and uptime of TiKV:
 
     ```sql
     select STORE_ID,ADDRESS,STORE_STATE,STORE_STATE_NAME,CAPACITY,AVAILABLE,UPTIME from INFORMATION_SCHEMA.TIKV_STORE_STATUS;
     ```
 
-    期待される出力:
+    Expected output:
 
     ```sql
     +----------+--------------------+-------------+------------------+----------+-----------+--------------------+
@@ -199,15 +181,13 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
     3 rows in set (0.00 sec)
     ```
 
--   TiDB を終了します。
-
-    {{< copyable "" >}}
+-   Exit TiDB:
 
     ```sql
     exit
     ```
 
-    期待される出力:
+    Expected output:
 
     ```sql
     Bye

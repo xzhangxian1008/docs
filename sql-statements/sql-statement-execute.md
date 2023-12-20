@@ -3,18 +3,18 @@ title: EXECUTE | TiDB SQL Statement Reference
 summary: An overview of the usage of EXECUTE for the TiDB database.
 ---
 
-# 実行する {#execute}
+# EXECUTE {#execute}
 
-`EXECUTE`ステートメントは、サーバー側のプリペアド ステートメントへの SQL インターフェイスを提供します。
+The `EXECUTE` statement provides an SQL interface to server-side prepared statements.
 
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
 ```ebnf+diagram
 ExecuteStmt ::=
     'EXECUTE' Identifier ( 'USING' UserVariable ( ',' UserVariable )* )?
 ```
 
-## 例 {#examples}
+## Examples {#examples}
 
 ```sql
 mysql> PREPARE mystmt FROM 'SELECT ? as num FROM DUAL';
@@ -35,11 +35,11 @@ mysql> DEALLOCATE PREPARE mystmt;
 Query OK, 0 rows affected (0.00 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-TiDB の`EXECUTE`ステートメントは MySQL と完全な互換性があります。互換性の違いを見つけた場合は、 [GitHub の問題](https://github.com/pingcap/tidb/issues/new/choose)を介して報告してください。
+The `EXECUTE` statement in TiDB is fully compatible with MySQL. If you find any compatibility differences, [report a bug](https://docs.pingcap.com/tidb/stable/support).
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [準備](/sql-statements/sql-statement-prepare.md)
--   [割り当てを解除する](/sql-statements/sql-statement-deallocate.md)
+-   [PREPARE](/sql-statements/sql-statement-prepare.md)
+-   [DEALLOCATE](/sql-statements/sql-statement-deallocate.md)

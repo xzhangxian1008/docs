@@ -5,9 +5,9 @@ summary: An overview of the usage of GRANT <role> for the TiDB database.
 
 # <code>GRANT &#x3C;role></code> {#code-grant-x3c-role-code}
 
-以前に作成したロールを既存のユーザーに割り当てます。ユーザーは、ステートメント`SET ROLE <rolename>`を使用してロールの権限を引き受けるか、ステートメント`SET ROLE ALL`を使用して、割り当てられているすべてのロールを引き受けることができます。
+Assigns a previously created role to an existing user. The user can use then use the statement `SET ROLE <rolename>` to assume the privileges of the role, or `SET ROLE ALL` to assume all roles that have been assigned.
 
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
 ```ebnf+diagram
 GrantRoleStmt ::=
@@ -20,15 +20,15 @@ UsernameList ::=
     Username ( ',' Username )*
 ```
 
-## 例 {#examples}
+## Examples {#examples}
 
-`root`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `root` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u root
 ```
 
-新しいロール`analyticsteam`と新しいユーザー`jennifer`を作成します。
+Create a new role `analyticsteam` and a new user `jennifer`:
 
 ```sql
 CREATE ROLE analyticsteam;
@@ -44,13 +44,13 @@ GRANT analyticsteam TO jennifer;
 Query OK, 0 rows affected (0.01 sec)
 ```
 
-`jennifer`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `jennifer` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u jennifer
 ```
 
-デフォルトでは、 `analyticsteam`ロールに関連付けられた権限を使用できるようにするには、 `jennifer` `SET ROLE analyticsteam`実行する必要があることに注意してください。
+Note that by default `jennifer` needs to execute `SET ROLE analyticsteam` in order to be able to use the privileges associated with the `analyticsteam` role:
 
 ```sql
 SHOW GRANTS;
@@ -86,26 +86,26 @@ SHOW TABLES IN test;
 1 row in set (0.00 sec)
 ```
 
-`root`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `root` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u root
 ```
 
-ステートメント`SET DEFAULT ROLE`使用して、ロール`analyticsteam`を`jennifer`に関連付けることができます。
+The statement `SET DEFAULT ROLE` can be used to associate the role `analyticsteam` to `jennifer`:
 
 ```sql
 SET DEFAULT ROLE analyticsteam TO jennifer;
 Query OK, 0 rows affected (0.02 sec)
 ```
 
-`jennifer`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `jennifer` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u jennifer
 ```
 
-この後、ユーザー`jennifer`はロール`analyticsteam`に関連付けられた権限を持ち、ユーザー`jennifer`ステートメント`SET ROLE`を実行する必要がなくなります。
+After this, the user `jennifer` has the privileges associated with the role `analyticsteam` and `jennifer` does not have to execute the statement `SET ROLE`:
 
 ```sql
 SHOW GRANTS;
@@ -127,11 +127,11 @@ SHOW TABLES IN test;
 1 row in set (0.00 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-TiDB の`GRANT <role>`ステートメントは、MySQL 8.0 のロール機能と完全な互換性があります。互換性の違いを見つけた場合は、 [GitHub の問題](https://github.com/pingcap/tidb/issues/new/choose)を介して報告してください。
+The `GRANT <role>` statement in TiDB is fully compatible with the roles feature in MySQL 8.0. If you find any compatibility differences, [report a bug](https://docs.pingcap.com/tidb/stable/support).
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
 -   [`GRANT &#x3C;privileges>`](/sql-statements/sql-statement-grant-privileges.md)
 -   [`CREATE ROLE`](/sql-statements/sql-statement-create-role.md)
@@ -142,6 +142,6 @@ TiDB の`GRANT <role>`ステートメントは、MySQL 8.0 のロール機能と
 
 <CustomContent platform="tidb">
 
--   [役割ベースのアクセス制御](/role-based-access-control.md)
+-   [Role-Based Access Control](/role-based-access-control.md)
 
 </CustomContent>

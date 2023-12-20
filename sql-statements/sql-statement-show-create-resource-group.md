@@ -3,19 +3,15 @@ title: SHOW CREATE RESOURCE GROUP
 summary: Learn the usage of SHOW CREATE RESOURCE GROUP in TiDB.
 ---
 
-# 表示 リソースグループの作成 {#show-create-resource-group}
+# SHOW CREATE RESOURCE GROUP {#show-create-resource-group}
 
-<CustomContent platform="tidb-cloud">
+You can use the `SHOW CREATE RESOURCE GROUP` statement to view the current definition of a resource group.
 
-> **ノート：**
+> **Note:**
 >
-> この機能は[TiDB サーバーレスクラスター](https://docs.pingcap.com/tidbcloud/select-cluster-tier#tidb-serverless)では使用できません。
+> This feature is not available on [TiDB Serverless](https://docs.pingcap.com/tidbcloud/select-cluster-tier#tidb-serverless) clusters.
 
-</CustomContent>
-
-`SHOW CREATE RESOURCE GROUP`ステートメントを使用すると、リソース グループの現在の定義を表示できます。
-
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
 ```ebnf+diagram
 ShowCreateResourceGroupStmt ::=
@@ -25,16 +21,16 @@ ResourceGroupName ::=
     Identifier
 ```
 
-## 例 {#examples}
+## Examples {#examples}
 
-リソース グループを作成します`rg1` 。
+Create a resource group `rg1`.
 
 ```sql
 CREATE RESOURCE GROUP rg1 RU_PER_SEC=100;
 Query OK, 0 rows affected (0.10 sec)
 ```
 
-`rg1`の定義をビュー。
+View the definition of `rg1`.
 
 ```sql
 SHOW CREATE RESOURCE GROUP rg1;
@@ -47,13 +43,13 @@ SHOW CREATE RESOURCE GROUP rg1;
 1 row in set (0.01 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-このステートメントは、MySQL の TiDB 拡張機能です。
+This statement is a TiDB extension for MySQL.
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [TiDB リソース制御](/tidb-resource-control.md)
--   [リソースグループの作成](/sql-statements/sql-statement-alter-resource-group.md)
--   [リソースグループの変更](/sql-statements/sql-statement-alter-resource-group.md)
--   [リソースグループを削除](/sql-statements/sql-statement-drop-resource-group.md)
+-   [TiDB RESOURCE CONTROL](/tidb-resource-control.md)
+-   [CREATE RESOURCE GROUP](/sql-statements/sql-statement-alter-resource-group.md)
+-   [ALTER RESOURCE GROUP](/sql-statements/sql-statement-alter-resource-group.md)
+-   [DROP RESOURCE GROUP](/sql-statements/sql-statement-drop-resource-group.md)

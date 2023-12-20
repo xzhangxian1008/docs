@@ -3,48 +3,44 @@ title: FLASHBACK CLUSTER TO TIMESTAMP
 summary: Learn the usage of FLASHBACK CLUSTER TO TIMESTAMP in TiDB databases.
 ---
 
-# フラッシュバッククラスターからタイムスタンプへ {#flashback-cluster-to-timestamp}
+# FLASHBACK CLUSTER TO TIMESTAMP {#flashback-cluster-to-timestamp}
 
-TiDB v6.4.0 では`FLASHBACK CLUSTER TO TIMESTAMP`構文が導入されています。これを使用して、クラスターを特定の時点に復元できます。
+TiDB v6.4.0 introduces the `FLASHBACK CLUSTER TO TIMESTAMP` syntax. You can use it to restore a cluster to a specific point in time.
 
-<CustomContent platform="tidb-cloud">
-
-> **警告：**
+> **Warning:**
 >
-> `FLASHBACK CLUSTER TO TIMESTAMP`構文は[TiDB サーバーレス](https://docs.pingcap.com/tidbcloud/select-cluster-tier#tidb-serverless)クラスターには適用されません。予期しない結果を避けるため、TiDB サーバーレス クラスターではこのステートメントを実行しないでください。
-
-</CustomContent>
+> The `FLASHBACK CLUSTER TO TIMESTAMP` syntax is not applicable to [TiDB Serverless](https://docs.pingcap.com/tidbcloud/select-cluster-tier#tidb-serverless) clusters. To avoid unexpected results, do not execute this statement on TiDB Serverless clusters.
 
 <CustomContent platform="tidb">
 
-> **警告：**
+> **Warning:**
 >
-> TiDB v7.1.0 でこの機能を使用すると、FLASHBACK 操作の完了後でも、一部のリージョンが FLASHBACK プロセスに残る場合があります。 v7.1.0 ではこの機能を使用しないことをお勧めします。詳細については、問題[#44292](https://github.com/pingcap/tidb/issues/44292)を参照してください。
+> When you use this feature in TiDB v7.1.0, some Regions might remain in the FLASHBACK process even after the completion of the FLASHBACK operation. It is recommended to avoid using this feature in v7.1.0. For more information, see issue [#44292](https://github.com/pingcap/tidb/issues/44292).
 >
-> この問題が発生した場合は、 [TiDB スナップショットのバックアップと復元](/br/br-snapshot-guide.md)機能を使用してデータを復元できます。
+> If you have encountered this issue, you can use the [TiDB snapshot backup and restore](/br/br-snapshot-guide.md) feature to restore data.
 
 </CustomContent>
 
-> **ノート：**
+> **Note:**
 >
-> `FLASHBACK CLUSTER TO TIMESTAMP`の動作原理は、特定の時点の古いデータを最新のタイムスタンプで書き込み、現在のデータは削除しません。したがって、この機能を使用する前に、古いデータと現在のデータを保存するのに十分なstorage領域があることを確認する必要があります。
+> The working principle of `FLASHBACK CLUSTER TO TIMESTAMP` is to write the old data of a specific point in time with the latest timestamp, and will not delete the current data. So before using this feature, you need to ensure that there is enough storage space for the old data and the current data.
 
-## 構文 {#syntax}
+## Syntax {#syntax}
 
 ```sql
 FLASHBACK CLUSTER TO TIMESTAMP '2022-09-21 16:02:50';
 ```
 
-### あらすじ {#synopsis}
+### Synopsis {#synopsis}
 
 ```ebnf+diagram
 FlashbackToTimestampStmt ::=
     "FLASHBACK" "CLUSTER" "TO" "TIMESTAMP" stringLit
 ```
 
-## ノート {#notes}
+## Notes {#notes}
 
--   `FLASHBACK`ステートメントで指定する時間は、ガベージ コレクション (GC) の有効期間内である必要があります。システム変数[`tidb_gc_life_time`](/system-variables.md#tidb_gc_life_time-new-in-v50) (デフォルト: `10m0s` ) は、以前のバージョンの行の保持時間を定義します。ガベージコレクションが実行された現在の`safePoint`の場所は、次のクエリで取得できます。
+-   The time specified in the `FLASHBACK` statement must be within the Garbage Collection (GC) lifetime. The system variable [`tidb_gc_life_time`](/system-variables.md#tidb_gc_life_time-new-in-v50) (default: `10m0s`) defines the retention time of earlier versions of rows. The current `safePoint` of where garbage collection has been performed up to can be obtained with the following query:
 
     ```sql
     SELECT * FROM mysql.tidb WHERE variable_name = 'tikv_gc_safe_point';
@@ -52,30 +48,30 @@ FlashbackToTimestampStmt ::=
 
 <CustomContent platform='tidb'>
 
--   `SUPER`権限を持つユーザーのみが`FLASHBACK CLUSTER` SQL ステートメントを実行できます。
--   `FLASHBACK CLUSTER` `ALTER TABLE ATTRIBUTE` 、 `ALTER TABLE REPLICA` 、 `CREATE PLACEMENT POLICY`などの PD 関連情報を変更する DDL ステートメントのロールバックをサポートしません。
--   `FLASHBACK`ステートメントで指定された時点で、完全に実行されていない DDL ステートメントがあってはなりません。そのような DDL が存在する場合、TiDB はそれを拒否します。
--   `FLASHBACK CLUSTER TO TIMESTAMP`を実行する前に、TiDB は関連するすべての接続を切断し、ステートメント`FLASHBACK CLUSTER`完了するまでこれらのテーブルに対する読み取りおよび書き込み操作を禁止します。
--   `FLASHBACK CLUSTER TO TIMESTAMP`ステートメントは実行後にキャンセルできません。 TiDB は成功するまで再試行を続けます。
--   `FLASHBACK CLUSTER`の実行中にデータをバックアップする必要がある場合は、 [復元する](/br/br-snapshot-guide.md)のみを使用し、 `FLASHBACK CLUSTER`の開始時刻よりも前の`BackupTS`を指定できます。さらに、 `FLASHBACK CLUSTER`の実行中に[ログのバックアップ](/br/br-pitr-guide.md)を有効にすると失敗します。したがって、 `FLASHBACK CLUSTER`が完了した後でログのバックアップを有効にするようにしてください。
--   `FLASHBACK CLUSTER`ステートメントによってメタデータ (テーブル構造、データベース構造) のロールバックが発生した場合、関連する変更は TiCDC によってレプリケートされませ**ん**。したがって、タスクを手動で一時停止し、 `FLASHBACK CLUSTER`の完了を待ち、アップストリームとダウンストリームのスキーマ定義を手動でレプリケートして、一貫性があることを確認する必要があります。その後、TiCDC 変更フィードを再作成する必要があります。
+-   Only a user with the `SUPER` privilege can execute the `FLASHBACK CLUSTER` SQL statement.
+-   `FLASHBACK CLUSTER` does not support rolling back DDL statements that modify PD-related information, such as `ALTER TABLE ATTRIBUTE`, `ALTER TABLE REPLICA`, and `CREATE PLACEMENT POLICY`.
+-   At the time specified in the `FLASHBACK` statement, there cannot be a DDL statement that is not completely executed. If such a DDL exists, TiDB will reject it.
+-   Before executing `FLASHBACK CLUSTER TO TIMESTAMP`, TiDB disconnects all related connections and prohibits read and write operations on these tables until the `FLASHBACK CLUSTER` statement is completed.
+-   The `FLASHBACK CLUSTER TO TIMESTAMP` statement cannot be canceled after being executed. TiDB will keep retrying until it succeeds.
+-   During the execution of `FLASHBACK CLUSTER`, if you need to back up data, you can only use [Backup &#x26; Restore](/br/br-snapshot-guide.md) and specify a `BackupTS` that is earlier than the start time of `FLASHBACK CLUSTER`. In addition, during the execution of `FLASHBACK CLUSTER`, enabling [log backup](/br/br-pitr-guide.md) will fail. Therefore, try to enable log backup after `FLASHBACK CLUSTER` is completed.
+-   If the `FLASHBACK CLUSTER` statement causes the rollback of metadata (table structure, database structure), the related modifications will **not** be replicated by TiCDC. Therefore, you need to pause the task manually, wait for the completion of `FLASHBACK CLUSTER`, and manually replicate the schema definitions of the upstream and downstream to make sure that they are consistent. After that, you need to recreate the TiCDC changefeed.
 
 </CustomContent>
 
 <CustomContent platform='tidb-cloud'>
 
--   `SUPER`権限を持つユーザーのみが`FLASHBACK CLUSTER` SQL ステートメントを実行できます。
--   `FLASHBACK CLUSTER` `ALTER TABLE ATTRIBUTE` 、 `ALTER TABLE REPLICA` 、 `CREATE PLACEMENT POLICY`などの PD 関連情報を変更する DDL ステートメントのロールバックをサポートしません。
--   `FLASHBACK`ステートメントで指定された時点で、完全に実行されていない DDL ステートメントがあってはなりません。そのような DDL が存在する場合、TiDB はそれを拒否します。
--   `FLASHBACK CLUSTER TO TIMESTAMP`を実行する前に、TiDB は関連するすべての接続を切断し、ステートメント`FLASHBACK CLUSTER`完了するまでこれらのテーブルに対する読み取りおよび書き込み操作を禁止します。
--   `FLASHBACK CLUSTER TO TIMESTAMP`ステートメントは実行後にキャンセルできません。 TiDB は成功するまで再試行を続けます。
--   `FLASHBACK CLUSTER`ステートメントによってメタデータ (テーブル構造、データベース構造) のロールバックが発生した場合、関連する変更は TiCDC によってレプリケートされませ**ん**。したがって、タスクを手動で一時停止し、 `FLASHBACK CLUSTER`の完了を待ち、アップストリームとダウンストリームのスキーマ定義を手動でレプリケートして、一貫性があることを確認する必要があります。その後、TiCDC 変更フィードを再作成する必要があります。
+-   Only a user with the `SUPER` privilege can execute the `FLASHBACK CLUSTER` SQL statement.
+-   `FLASHBACK CLUSTER` does not support rolling back DDL statements that modify PD-related information, such as `ALTER TABLE ATTRIBUTE`, `ALTER TABLE REPLICA`, and `CREATE PLACEMENT POLICY`.
+-   At the time specified in the `FLASHBACK` statement, there cannot be a DDL statement that is not completely executed. If such a DDL exists, TiDB will reject it.
+-   Before executing `FLASHBACK CLUSTER TO TIMESTAMP`, TiDB disconnects all related connections and prohibits read and write operations on these tables until the `FLASHBACK CLUSTER` statement is completed.
+-   The `FLASHBACK CLUSTER TO TIMESTAMP` statement cannot be canceled after being executed. TiDB will keep retrying until it succeeds.
+-   If the `FLASHBACK CLUSTER` statement causes the rollback of metadata (table structure, database structure), the related modifications will **not** be replicated by TiCDC. Therefore, you need to pause the task manually, wait for the completion of `FLASHBACK CLUSTER`, and manually replicate the schema definitions of the upstream and downstream to make sure that they are consistent. After that, you need to recreate the TiCDC changefeed.
 
 </CustomContent>
 
-## 例 {#example}
+## Example {#example}
 
-次の例は、新しく挿入されたデータを復元する方法を示しています。
+The following example shows how to restore the newly inserted data:
 
 ```sql
 mysql> CREATE TABLE t(a INT);
@@ -110,7 +106,7 @@ mysql> SELECT * FROM t;
 Empty set (0.00 sec)
 ```
 
-`FLASHBACK`ステートメントで指定された時間に完全に実行されていない DDL ステートメントがある場合、 `FLASHBACK`ステートメントは失敗します。
+If there is a DDL statement that is not completely executed at the time specified in the `FLASHBACK` statement, the `FLASHBACK` statement fails:
 
 ```sql
 mysql> ALTER TABLE t ADD INDEX k(a);
@@ -128,12 +124,10 @@ mysql> FLASHBACK CLUSTER TO TIMESTAMP '2023-01-29 14:33:12';
 ERROR 1105 (HY000): Detected another DDL job at 2023-01-29 14:33:12 +0800 CST, can't do flashback
 ```
 
-ログを通じて、 `FLASHBACK`の実行の進行状況を取得できます。以下は例です。
+Through the log, you can obtain the execution progress of `FLASHBACK`. The following is an example:
 
-```
-[2022/10/09 17:25:59.316 +08:00] [INFO] [cluster.go:463] ["flashback cluster stats"] ["complete regions"=9] ["total regions"=10] []
-```
+    [2022/10/09 17:25:59.316 +08:00] [INFO] [cluster.go:463] ["flashback cluster stats"] ["complete regions"=9] ["total regions"=10] []
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-このステートメントは、MySQL 構文に対する TiDB 拡張機能です。
+This statement is a TiDB extension to MySQL syntax.

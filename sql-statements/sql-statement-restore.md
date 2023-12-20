@@ -3,25 +3,30 @@ title: RESTORE | TiDB SQL Statement Reference
 summary: An overview of the usage of RESTORE for the TiDB database.
 ---
 
-# 戻す {#restore}
+# RESTORE {#restore}
 
-このステートメントは、 [`BACKUP`文](/sql-statements/sql-statement-backup.md)によって以前に作成されたバックアップ アーカイブから分散復元を実行します。
+This statement performs a distributed restore from a backup archive previously produced by a [`BACKUP` statement](/sql-statements/sql-statement-backup.md).
 
-`RESTORE`ステートメントは[BRツール](/br/backup-and-restore-overview.md)と同じエンジンを使用しますが、復元プロセスが別個のBRツールではなく TiDB 自体によって駆動される点が異なります。 BRのすべての利点と注意事項がここにも適用されます。特に、 **`RESTORE`現在ACIDに準拠していません**。 `RESTORE`を実行する前に、次の要件が満たされていることを確認してください。
+> **Warning:**
+>
+> -   This feature is experimental. It is not recommended that you use it in the production environment. This feature might be changed or removed without prior notice. If you find a bug, you can report an [issue](https://github.com/pingcap/tidb/issues) on GitHub.
+> -   This feature is not available on [TiDB Serverless](https://docs.pingcap.com/tidbcloud/select-cluster-tier#tidb-serverless) clusters.
 
--   クラスターは「オフライン」であり、現在の TiDB セッションは、復元されるすべてのテーブルにアクセスできる唯一のアクティブな SQL 接続です。
--   完全復元を実行する場合、既存のデータが上書きされ、データとインデックスの間に不整合が生じる可能性があるため、復元されるテーブルがまだ存在してはいけません。
--   増分復元が実行されている場合、テーブルはバックアップ作成時の`LAST_BACKUP`タイムスタンプとまったく同じ状態になっている必要があります。
+The `RESTORE` statement uses the same engine as the [BR tool](https://docs.pingcap.com/tidb/stable/backup-and-restore-overview), except that the restore process is driven by TiDB itself rather than a separate BR tool. All benefits and caveats of BR also apply here. In particular, **`RESTORE` is currently not ACID-compliant**. Before running `RESTORE`, ensure that the following requirements are met:
 
-`RESTORE`を実行するには、 `RESTORE_ADMIN`または`SUPER`権限が必要です。さらに、リストアを実行する TiDB ノードとクラスター内のすべての TiKV ノードの両方に、宛先からの読み取り権限が必要です。
+-   The cluster is "offline", and the current TiDB session is the only active SQL connection to access all tables being restored.
+-   When a full restore is being performed, the tables being restored should not already exist, because existing data might be overridden and causes inconsistency between the data and indices.
+-   When an incremental restore is being performed, the tables should be at the exact same state as the `LAST_BACKUP` timestamp when the backup is created.
 
-`RESTORE`ステートメントはブロックされており、復元タスク全体が完了、失敗、またはキャンセルされた後にのみ終了します。 `RESTORE`を実行するには、長時間持続する接続を準備する必要があります。タスクは[`KILL TIDB QUERY`](/sql-statements/sql-statement-kill.md)ステートメントを使用してキャンセルできます。
+Running `RESTORE` requires either the `RESTORE_ADMIN` or `SUPER` privilege. Additionally, both the TiDB node executing the restore and all TiKV nodes in the cluster must have read permission from the destination.
 
-`BACKUP`と`RESTORE`のタスクは一度に 1 つだけ実行できます。 `BACKUP`または`RESTORE`タスクが同じ TiDBサーバー上ですでに実行されている場合、新しい`RESTORE`実行は、前のタスクがすべて完了するまで待機します。
+The `RESTORE` statement is blocking, and will finish only after the entire restore task is finished, failed, or canceled. A long-lasting connection should be prepared for running `RESTORE`. The task can be canceled using the [`KILL TIDB QUERY`](/sql-statements/sql-statement-kill.md) statement.
 
-`RESTORE` 「tikv」storageエンジンでのみ使用できます。 「unistore」エンジンで`RESTORE`使用すると失敗します。
+Only one `BACKUP` and `RESTORE` task can be executed at a time. If a `BACKUP` or `RESTORE` task is already running on the same TiDB server, the new `RESTORE` execution will wait until all previous tasks are done.
 
-## あらすじ {#synopsis}
+`RESTORE` can only be used with "tikv" storage engine. Using `RESTORE` with the "unistore" engine will fail.
+
+## Synopsis {#synopsis}
 
 ```ebnf+diagram
 RestoreStmt ::=
@@ -41,11 +46,9 @@ Boolean ::=
     NUM | "TRUE" | "FALSE"
 ```
 
-## 例 {#examples}
+## Examples {#examples}
 
-### バックアップアーカイブから復元する {#restore-from-backup-archive}
-
-{{< copyable "" >}}
+### Restore from backup archive {#restore-from-backup-archive}
 
 ```sql
 RESTORE DATABASE * FROM 'local:///mnt/backup/2020/04/';
@@ -60,64 +63,64 @@ RESTORE DATABASE * FROM 'local:///mnt/backup/2020/04/';
 1 row in set (28.961 sec)
 ```
 
-上の例では、すべてのデータがローカル ファイル システムのバックアップ アーカイブから復元されます。データは、すべての TiDB および TiKV ノードに分散された`/mnt/backup/2020/04/`ディレクトリから SST ファイルとして読み込まれます。
+In the example above, all data is restored from a backup archive at the local filesystem. The data is read as SST files from the `/mnt/backup/2020/04/` directories distributed among all TiDB and TiKV nodes.
 
-上記の結果の最初の行は次のように説明されます。
+The first row of the result above is described as follows:
 
-| カラム              | 説明                                             |
-| :--------------- | :--------------------------------------------- |
-| `Destination`    | 読み取り先の URL                                     |
-| `Size`           | バックアップ アーカイブの合計サイズ (バイト単位)                     |
-| `BackupTS`       | （使用されていない）                                     |
-| `Queue Time`     | `RESTORE`のタスクがキューに入れられたときのタイムスタンプ (現在のタイムゾーン)。 |
-| `Execution Time` | `RESTORE`タスクの実行が開始されたときのタイムスタンプ (現在のタイムゾーン)。   |
+| Column           | Description                                                                 |
+| :--------------- | :-------------------------------------------------------------------------- |
+| `Destination`    | The destination URL to read from                                            |
+| `Size`           | The total size of the backup archive, in bytes                              |
+| `BackupTS`       | (not used)                                                                  |
+| `Queue Time`     | The timestamp (in current time zone) when the `RESTORE` task was queued.    |
+| `Execution Time` | The timestamp (in current time zone) when the `RESTORE` task starts to run. |
 
-### 部分復元 {#partial-restore}
+### Partial restore {#partial-restore}
 
-どのデータベースまたはテーブルを復元するかを指定できます。一部のデータベースまたはテーブルがバックアップ アーカイブにない場合、それらは無視されるため、 `RESTORE`何もせずに完了します。
-
-{{< copyable "" >}}
+You can specify which databases or tables to restore. If some databases or tables are missing from the backup archive, they will be ignored, and thus `RESTORE` would complete without doing anything.
 
 ```sql
 RESTORE DATABASE `test` FROM 'local:///mnt/backup/2020/04/';
 ```
 
-{{< copyable "" >}}
-
 ```sql
 RESTORE TABLE `test`.`sbtest01`, `test`.`sbtest02` FROM 'local:///mnt/backup/2020/04/';
 ```
 
-### 外部ストレージ {#external-storages}
+### External storages {#external-storages}
 
-BR は、 S3 または GCS からのデータの復元をサポートしています。
-
-{{< copyable "" >}}
+BR supports restoring data from S3 or GCS:
 
 ```sql
 RESTORE DATABASE * FROM 's3://example-bucket-2020/backup-05/';
 ```
 
-URL 構文については、 [外部storageURI](/br/backup-and-restore-storages.md#uri-format)で詳しく説明します。
+<CustomContent platform="tidb">
 
-認証情報を配布しないクラウド環境で実行する場合は、 `SEND_CREDENTIALS_TO_TIKV`オプションを`FALSE`に設定します。
+The URL syntax is further explained in [URI Formats of External Storage Services](/external-storage-uri.md).
 
-{{< copyable "" >}}
+</CustomContent>
+
+<CustomContent platform="tidb-cloud">
+
+The URL syntax is further explained in [external storage URI](https://docs.pingcap.com/tidb/stable/external-storage-uri).
+
+</CustomContent>
+
+When running on cloud environment where credentials should not be distributed, set the `SEND_CREDENTIALS_TO_TIKV` option to `FALSE`:
 
 ```sql
 RESTORE DATABASE * FROM 's3://example-bucket-2020/backup-05/'
     SEND_CREDENTIALS_TO_TIKV = FALSE;
 ```
 
-### パフォーマンスの微調整 {#performance-fine-tuning}
+### Performance fine-tuning {#performance-fine-tuning}
 
-`RATE_LIMIT`を使用すると、TiKV ノードごとの平均ダウンロード速度が制限され、ネットワーク帯域幅が削減されます。
+Use `RATE_LIMIT` to limit the average download speed per TiKV node to reduce network bandwidth.
 
-デフォルトでは、TiDB ノードは 128 の復元スレッドを実行します。この値は`CONCURRENCY`オプションで調整できます。
+By default, TiDB node would run 128 restore threads. This value can be adjusted with the `CONCURRENCY` option.
 
-復元が完了する前に、アーカイブのデータに対してチェック`RESTORE`を実行して、正確性を検証します。このステップが不要であると確信できる場合は、 `CHECKSUM`オプションを使用して無効にすることができます。
-
-{{< copyable "" >}}
+Before restore is completed, `RESTORE` would perform a checksum against the data from the archive to verify correctness. This step can be disabled with the `CHECKSUM` option if you are confident that this is unnecessary.
 
 ```sql
 RESTORE DATABASE * FROM 's3://example-bucket-2020/backup-06/'
@@ -126,13 +129,11 @@ RESTORE DATABASE * FROM 's3://example-bucket-2020/backup-06/'
     CHECKSUM = FALSE;
 ```
 
-### 増分復元 {#incremental-restore}
+### Incremental restore {#incremental-restore}
 
-増分復元を実行するための特別な構文はありません。 TiDB は、バックアップ アーカイブがフルであるか増分であるかを認識し、適切なアクションを実行します。各増分復元を正しい順序で適用するだけで済みます。
+There is no special syntax to perform incremental restore. TiDB will recognize whether the backup archive is full or incremental and take appropriate action. You only need to apply each incremental restore in correct order.
 
-たとえば、バックアップ タスクが次のように作成されたとします。
-
-{{< copyable "" >}}
+For instance, if a backup task is created as follows:
 
 ```sql
 BACKUP DATABASE `test` TO 's3://example-bucket/full-backup'  SNAPSHOT = 413612900352000;
@@ -140,9 +141,7 @@ BACKUP DATABASE `test` TO 's3://example-bucket/inc-backup-1' SNAPSHOT = 41497185
 BACKUP DATABASE `test` TO 's3://example-bucket/inc-backup-2' SNAPSHOT = 416353458585600 LAST_BACKUP = 414971854848000;
 ```
 
-その場合は、復元でも同じ順序を適用する必要があります。
-
-{{< copyable "" >}}
+then the same order should be applied in the restore:
 
 ```sql
 RESTORE DATABASE * FROM 's3://example-bucket/full-backup';
@@ -150,11 +149,11 @@ RESTORE DATABASE * FROM 's3://example-bucket/inc-backup-1';
 RESTORE DATABASE * FROM 's3://example-bucket/inc-backup-2';
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-このステートメントは、MySQL 構文に対する TiDB 拡張機能です。
+This statement is a TiDB extension to MySQL syntax.
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [バックアップ](/sql-statements/sql-statement-backup.md)
--   [復元を表示](/sql-statements/sql-statement-show-backups.md)
+-   [BACKUP](/sql-statements/sql-statement-backup.md)
+-   [SHOW RESTORES](/sql-statements/sql-statement-show-backups.md)

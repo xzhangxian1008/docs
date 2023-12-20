@@ -3,11 +3,11 @@ title: RENAME TABLE | TiDB SQL Statement Reference
 summary: An overview of the usage of RENAME TABLE for the TiDB database.
 ---
 
-# テーブルの名前を変更 {#rename-table}
+# RENAME TABLE {#rename-table}
 
-このステートメントは、既存のテーブルの名前を新しい名前に変更します。
+This statement renames an existing table to a new name.
 
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
 ```ebnf+diagram
 RenameTableStmt ::=
@@ -17,7 +17,7 @@ TableToTable ::=
     TableName 'TO' TableName
 ```
 
-## 例 {#examples}
+## Examples {#examples}
 
 ```sql
 mysql> CREATE TABLE t1 (a int);
@@ -43,12 +43,12 @@ mysql> SHOW TABLES;
 1 row in set (0.00 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-TiDB の`RENAME TABLE`ステートメントは MySQL と完全な互換性があります。互換性の違いを見つけた場合は、 [GitHub の問題](https://github.com/pingcap/tidb/issues/new/choose)を介して報告してください。
+The `RENAME TABLE` statement in TiDB is fully compatible with MySQL. If you find any compatibility differences, [report a bug](https://docs.pingcap.com/tidb/stable/support).
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [テーブルの作成](/sql-statements/sql-statement-create-table.md)
--   [テーブルを表示](/sql-statements/sql-statement-show-tables.md)
--   [他の机](/sql-statements/sql-statement-alter-table.md)
+-   [CREATE TABLE](/sql-statements/sql-statement-create-table.md)
+-   [SHOW TABLES](/sql-statements/sql-statement-show-tables.md)
+-   [ALTER TABLE](/sql-statements/sql-statement-alter-table.md)

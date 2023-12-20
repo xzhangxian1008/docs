@@ -3,71 +3,91 @@ title: mysql Schema
 summary: Learn about the TiDB system tables.
 ---
 
-# <code>mysql</code>スキーマ {#code-mysql-code-schema}
+# <code>mysql</code> Schema {#code-mysql-code-schema}
 
-`mysql`スキーマには TiDB システム テーブルが含まれています。この設計は MySQL の`mysql`スキーマに似ており、 `mysql.user`などのテーブルを直接編集できます。また、MySQL の拡張機能である多数のテーブルも含まれています。
+The `mysql` schema contains TiDB system tables. The design is similar to the `mysql` schema in MySQL, where tables such as `mysql.user` can be edited directly. It also contains a number of tables which are extensions to MySQL.
 
-## 付与システムテーブル {#grant-system-tables}
+## Grant system tables {#grant-system-tables}
 
-これらのシステム テーブルには、ユーザー アカウントとその権限に関する付与情報が含まれています。
+These system tables contain grant information about user accounts and their privileges:
 
--   `user` : ユーザー アカウント、グローバル権限、およびその他の非権限列
--   `db` : データベースレベルの権限
--   `tables_priv` : テーブルレベルの権限
--   `columns_priv` : 列レベルの権限
--   `password_history` : パスワード変更履歴
--   `default_roles` : ユーザーのデフォルトの役割
--   `global_grants` : 動的権限
--   `global_priv` : 証明書に基づく認証情報
--   `role_edges` : 役割間の関係
+-   `user`: user accounts, global privileges, and other non-privilege columns
+-   `db`: database-level privileges
+-   `tables_priv`: table-level privileges
+-   `columns_priv`: column-level privileges
+-   `password_history`: password change history
+-   `default_roles`: the default roles for a user
+-   `global_grants`: dynamic privileges
+-   `global_priv`: the authentication information based on certificates
+-   `role_edges`: the relationship between roles
 
-## サーバー側のヘルプ システム テーブル {#server-side-help-system-tables}
+## Cluster status system tables {#cluster-status-system-tables}
 
-現在、 `help_topic`は NULL です。
+-   The `tidb` table contains some global information about TiDB:
 
-## 統計システムテーブル {#statistics-system-tables}
+    -   `bootstrapped`: whether the TiDB cluster has been initialized. Note that this value is read-only and cannot be modified.
+    -   `tidb_server_version`: the version information of TiDB when it is initialized. Note that this value is read-only and cannot be modified.
+    -   `system_tz`: the system time zone of TiDB.
+    -   `new_collation_enabled`: whether TiDB has enabled the [new framework for collations](/character-set-and-collation.md#new-framework-for-collations). Note that this value is read-only and cannot be modified.
 
--   `stats_buckets` : 統計のバケット
--   `stats_histograms` : 統計のヒストグラム
--   `stats_top_n` : 統計のトップN
--   `stats_meta` : 総行数や更新された行などのテーブルのメタ情報
--   `stats_extended` : 拡張統計 (列間の順序相関など)
--   `stats_feedback` : 統計のクエリフィードバック
--   `stats_fm_sketch` : 統計列のヒストグラムの FMSketch 分布
--   `analyze_options` : 各テーブルのデフォルトの`analyze`オプション
--   `column_stats_usage` : 列統計の使用法
--   `schema_index_usage` : インデックスの使用
--   `analyze_jobs` : 進行中の統計収集タスクと過去 7 日間の履歴タスク レコード
+## Server-side help system tables {#server-side-help-system-tables}
 
-## 実行計画関連のシステムテーブル {#execution-plan-related-system-tables}
+Currently, the `help_topic` is NULL.
 
--   `bind_info` : 実行計画のバインディング情報
--   `capture_plan_baselines_blacklist` : 実行計画の自動バインドのブロックリスト
+## Statistics system tables {#statistics-system-tables}
 
-## GC ワーカー システム テーブル {#gc-worker-system-tables}
+-   `stats_buckets`: the buckets of statistics
+-   `stats_histograms`: the histograms of statistics
+-   `stats_top_n`: the TopN of statistics
+-   `stats_meta`: the meta information of tables, such as the total number of rows and updated rows
+-   `stats_extended`: extended statistics, such as the order correlation between columns
+-   `stats_feedback`: the query feedback of statistics
+-   `stats_fm_sketch`: the FMSketch distribution of the histogram of the statistics column
+-   `analyze_options`: the default `analyze` options for each table
+-   `column_stats_usage`: the usage of column statistics
+-   `schema_index_usage`: the usage of indexes
+-   `analyze_jobs`: the ongoing statistics collection tasks and the history task records within the last 7 days
 
--   `gc_delete_range` : 削除するKV範囲
--   `gc_delete_range_done` : 削除された KV 範囲
+## Execution plan-related system tables {#execution-plan-related-system-tables}
 
-## キャッシュされたテーブルに関連するシステム テーブル {#system-tables-related-to-cached-tables}
+-   `bind_info`: the binding information of execution plans
+-   `capture_plan_baselines_blacklist`: the blocklist for the automatic binding of the execution plan
 
--   `table_cache_meta`キャッシュされたテーブルのメタデータを保存します。
+## GC worker system tables {#gc-worker-system-tables}
 
-## TTL関連のシステムテーブル {#ttl-related-system-tables}
+> **Note:**
+>
+> The GC worker system tables are only applicable to TiDB Self-Hosted and not available on [TiDB Cloud](https://docs.pingcap.com/tidbcloud/).
 
--   `mysql.tidb_ttl_table_status`すべての TTL テーブルに対して以前に実行された TTL ジョブと進行中の TTL ジョブ
--   `mysql.tidb_ttl_task`現在進行中の TTL サブタスク
--   `mysql.tidb_ttl_job_history`過去 90 日間の TTL タスクの実行履歴
+-   `gc_delete_range`: the KV range to be deleted
+-   `gc_delete_range_done`: the deleted KV range
 
-## その他のシステムテーブル {#miscellaneous-system-tables}
+## System tables related to cached tables {#system-tables-related-to-cached-tables}
 
--   `GLOBAL_VARIABLES` : グローバル システム変数テーブル
+-   `table_cache_meta` stores the metadata of cached tables.
 
-<CustomContent platform="tidb">
+## TTL related system tables {#ttl-related-system-tables}
 
--   `tidb` : TiDB 実行時のバージョン情報を記録します`bootstrap`
--   `expr_pushdown_blacklist` : 式プッシュダウンのブロックリスト
--   `opt_rule_blacklist` : 論理最適化ルールのブロックリスト
--   `table_cache_meta` : キャッシュされたテーブルのメタデータ
+> **Note:**
+>
+> The TTL related system tables are not available on [TiDB Serverless](https://docs.pingcap.com/tidbcloud/select-cluster-tier#tidb-serverless) clusters.
 
-</CustomContent>
+-   `mysql.tidb_ttl_table_status` the previously executed TTL job and ongoing TTL job for all TTL tables
+-   `mysql.tidb_ttl_task` the current ongoing TTL subtasks
+-   `mysql.tidb_ttl_job_history` the execution history of TTL tasks in the last 90 days
+
+## System tables related to metadata locks {#system-tables-related-to-metadata-locks}
+
+-   `tidb_mdl_view`：a view of metadata locks. You can use it to view information about the currently blocked DDL statements
+-   `tidb_mdl_info`：used internally by TiDB to synchronize metadata locks across nodes
+
+## Miscellaneous system tables {#miscellaneous-system-tables}
+
+> **Note:**
+>
+> The `tidb`, `expr_pushdown_blacklist`, `opt_rule_blacklist`, and `table_cache_meta` system tables are only applicable to TiDB Self-Hosted and not available on [TiDB Cloud](https://docs.pingcap.com/tidbcloud/).
+
+-   `GLOBAL_VARIABLES`: global system variable table
+-   `expr_pushdown_blacklist`: the blocklist for expression pushdown
+-   `opt_rule_blacklist`: the blocklist for logical optimization rules
+-   `tidb_timers`: the metadata of internal timers

@@ -3,19 +3,15 @@ title: ALTER RESOURCE GROUP
 summary: Learn the usage of ALTER RESOURCE GROUP in TiDB.
 ---
 
-# リソースグループの変更 {#alter-resource-group}
+# ALTER RESOURCE GROUP {#alter-resource-group}
 
-<CustomContent platform="tidb-cloud">
+The `ALTER RESOURCE GROUP` statement is used to modify a resource group in a database.
 
-> **ノート：**
+> **Note:**
 >
-> この機能は[TiDB サーバーレスクラスター](https://docs.pingcap.com/tidbcloud/select-cluster-tier#tidb-serverless)では使用できません。
+> This feature is not available on [TiDB Serverless](https://docs.pingcap.com/tidbcloud/select-cluster-tier#tidb-serverless) clusters.
 
-</CustomContent>
-
-`ALTER RESOURCE GROUP`ステートメントは、データベース内のリソース グループを変更するために使用されます。
-
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
 ```ebnf+diagram
 AlterResourceGroupStmt ::=
@@ -43,29 +39,27 @@ ResourceGroupPriorityOption ::=
 
 ```
 
-TiDB は次の`DirectResourceGroupOption`サポートします。ここで[リクエストユニット (RU)](/tidb-resource-control.md#what-is-request-unit-ru) 、CPU、IO、およびその他のシステム リソースに対する TiDB の統合抽象化ユニットです。
+TiDB supports the following `DirectResourceGroupOption`, where [Request Unit (RU)](/tidb-resource-control.md#what-is-request-unit-ru) is a unified abstraction unit in TiDB for CPU, IO, and other system resources.
 
-| オプション        | 説明                                                                                     | 例                                                                  |
-| ------------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `RU_PER_SEC` | 1 秒あたりの RU バックフィルの速度                                                                   | `RU_PER_SEC = 500` 、このリソース グループが 1 秒あたり 500 RU でバックフィルされていることを示します |
-| `PRIORITY`   | TiKV 上で処理されるタスクの絶対的な優先度                                                                | `PRIORITY = HIGH`優先度が高いことを示します。指定しない場合、デフォルト値は`MEDIUM`です。          |
-| `BURSTABLE`  | `BURSTABLE`属性が設定されている場合、TiDB は、クォータを超過したときに、対応するリソース グループが利用可能なシステム リソースを使用することを許可します。 |                                                                    |
+| Option       | Description                                                                                                                                         | Example                                                                                                 |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `RU_PER_SEC` | Rate of RU backfilling per second                                                                                                                   | `RU_PER_SEC = 500` indicates that this resource group is backfilled with 500 RUs per second             |
+| `PRIORITY`   | The absolute priority of tasks to be processed on TiKV                                                                                              | `PRIORITY = HIGH` indicates that the priority is high. If not specified, the default value is `MEDIUM`. |
+| `BURSTABLE`  | If the `BURSTABLE` attribute is set, TiDB allows the corresponding resource group to use the available system resources when the quota is exceeded. |                                                                                                         |
 
-> **ノート：**
+> **Note:**
 >
-> `ALTER RESOURCE GROUP`ステートメントは、グローバル変数[`tidb_enable_resource_control`](/system-variables.md#tidb_enable_resource_control-new-in-v660) `ON`に設定されている場合にのみ実行できます。
+> The `ALTER RESOURCE GROUP` statement can only be executed when the global variable [`tidb_enable_resource_control`](/system-variables.md#tidb_enable_resource_control-new-in-v660) is set to `ON`.
 
-## 例 {#examples}
+## Examples {#examples}
 
-`rg1`という名前のリソース グループを作成し、そのプロパティを変更します。
+Create a resource group named `rg1` and modify its properties.
 
 ```sql
 DROP RESOURCE GROUP IF EXISTS rg1;
 ```
 
-```
-Query OK, 0 rows affected (0.22 sec)
-```
+    Query OK, 0 rows affected (0.22 sec)
 
 ```sql
 CREATE RESOURCE GROUP IF NOT EXISTS rg1
@@ -110,12 +104,12 @@ SELECT * FROM information_schema.resource_groups WHERE NAME ='rg1';
 1 rows in set (1.30 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-MySQL は[リソースグループの変更](https://dev.mysql.com/doc/refman/8.0/en/alter-resource-group.html)もサポートします。ただし、受け入れられるパラメータが TiDB とは異なるため、互換性はありません。
+MySQL also supports [ALTER RESOURCE GROUP](https://dev.mysql.com/doc/refman/8.0/en/alter-resource-group.html). However, the acceptable parameters are different from that of TiDB so that they are not compatible.
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [リソースグループを削除](/sql-statements/sql-statement-drop-resource-group.md)
--   [リソースグループの作成](/sql-statements/sql-statement-create-resource-group.md)
--   [リクエストユニット (RU)](/tidb-resource-control.md#what-is-request-unit-ru)
+-   [DROP RESOURCE GROUP](/sql-statements/sql-statement-drop-resource-group.md)
+-   [CREATE RESOURCE GROUP](/sql-statements/sql-statement-create-resource-group.md)
+-   [Request Unit (RU)](/tidb-resource-control.md#what-is-request-unit-ru)

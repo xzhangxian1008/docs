@@ -3,13 +3,13 @@ title: TiDB Data Migration Binlog Event Filter
 summary: Learn how to use the binlog event filter feature of DM.
 ---
 
-# TiDB データ移行Binlogイベント フィルター {#tidb-data-migration-binlog-event-filter}
+# TiDB Data Migration Binlog Event Filter {#tidb-data-migration-binlog-event-filter}
 
-TiDB Data Migration (DM) は、一部のスキーマまたはテーブルの指定されたタイプのbinlogイベントをフィルターで除外するか、のみ受信するbinlogイベント フィルター機能を提供します。たとえば、 `TRUNCATE TABLE`つまたは`INSERT`のイベントをすべてフィルターで除外できます。 binlogイベント フィルター機能は、 [ブロックリストと許可リスト](/dm/dm-block-allow-table-lists.md)機能よりも粒度が細かいです。
+TiDB Data Migration (DM) provides the binlog event filter feature to filter out or only receive specified types of binlog events for some schemas or tables. For example, you can filter out all `TRUNCATE TABLE` or `INSERT` events. The binlog event filter feature is more fine-grained than the [block and allow lists](/dm/dm-block-allow-table-lists.md) feature.
 
-## binlogイベントフィルターを構成する {#configure-the-binlog-event-filter}
+## Configure the binlog event filter {#configure-the-binlog-event-filter}
 
-タスク構成ファイルに次の構成を追加します。
+In the task configuration file, add the following configuration:
 
 ```yaml
 filters:
@@ -21,63 +21,63 @@ filters:
     ​action: Ignore
 ```
 
-DM v2.0.2 以降、ソース構成ファイルでbinlogイベント フィルターを構成できます。詳細は[アップストリーム データベースコンフィグレーションファイル](/dm/dm-source-configuration-file.md)を参照してください。
+Starting from DM v2.0.2, you can configure the binlog event filter in the source configuration file. For details, see [Upstream Database Configuration File](/dm/dm-source-configuration-file.md).
 
-単純なシナリオでは、スキーマとテーブルを一致させるためにワイルドカードを使用することをお勧めします。ただし、次のバージョンの違いに注意してください。
+When you use the wildcard for matching schemas and tables, note the following:
 
--   DM v1.0.5 以降のバージョンでは、 binlogイベント フィルターは[ワイルドカードマッチ](https://en.wikipedia.org/wiki/Glob_(programming)#Syntax)サポートしますが、ワイルドカード式には`*`**つだけ**使用でき、**最後に**`*`を配置する必要があります。
+-   `schema-pattern` and `table-pattern` only support wildcards, including `*`, `?`, and `[]`. There can only be one `*` symbol in a wildcard match, and it must be at the end. For example, in `table-pattern: "t_*"`, `"t_*"` indicates all tables starting with `t_`. See [wildcard matching](https://en.wikipedia.org/wiki/Glob_(programming)#Syntax) for details.
 
--   v1.0.5 より前の DM バージョンの場合、 binlogイベント フィルターはワイルドカードをサポートしますが、 `[...]`および`[!...]`式はサポートしません。
+-   `sql-pattern` only supports regular expressions.
 
-## パラメータの説明 {#parameter-descriptions}
+## Parameter descriptions {#parameter-descriptions}
 
--   [`schema-pattern` / `table-pattern`](/dm/table-selector.md) : `schema-pattern` / `table-pattern`に一致するアップストリーム MySQL または MariaDB インスタンス テーブルのbinlogイベントまたは DDL SQL ステートメントは、以下のルールによってフィルターされます。
+-   [`schema-pattern`/`table-pattern`](/dm/table-selector.md): the binlog events or DDL SQL statements of upstream MySQL or MariaDB instance tables that match `schema-pattern`/`table-pattern` are filtered by the rules below.
 
--   `events` :binlogイベント配列。次の表から 1 つ以上の`Event`のみを選択できます。
+-   `events`: the binlog event array. You can only select one or more `Event`s from the following table:
 
-    | イベント              | タイプ | 説明                         |
-    | ----------------- | --- | -------------------------- |
-    | `all`             |     | 以下のすべてのイベントが含まれます          |
-    | `all dml`         |     | 以下のすべての DML イベントが含まれます     |
-    | `all ddl`         |     | 以下のすべての DDL イベントが含まれます     |
-    | `none`            |     | 以下のイベントは含まれません             |
-    | `none ddl`        |     | 以下の DDL イベントは含まれません        |
-    | `none dml`        |     | 以下の DML イベントは含まれません        |
-    | `insert`          | DML | `INSERT` DML イベント          |
-    | `update`          | DML | `UPDATE` DML イベント          |
-    | `delete`          | DML | `DELETE` DML イベント          |
-    | `create database` | DDL | `CREATE DATABASE` DDL イベント |
-    | `drop database`   | DDL | `DROP DATABASE` DDL イベント   |
-    | `create table`    | DDL | `CREATE TABLE` DDL イベント    |
-    | `create index`    | DDL | `CREATE INDEX` DDL イベント    |
-    | `drop table`      | DDL | `DROP TABLE` DDL イベント      |
-    | `truncate table`  | DDL | `TRUNCATE TABLE` DDL イベント  |
-    | `rename table`    | DDL | `RENAME TABLE` DDL イベント    |
-    | `drop index`      | DDL | `DROP INDEX` DDL イベント      |
-    | `alter table`     | DDL | `ALTER TABLE` DDL イベント     |
+    | Events            | Type | Description                           |
+    | ----------------- | ---- | ------------------------------------- |
+    | `all`             |      | Includes all the events below         |
+    | `all dml`         |      | Includes all DML events below         |
+    | `all ddl`         |      | Includes all DDL events below         |
+    | `none`            |      | Includes none of the events below     |
+    | `none ddl`        |      | Includes none of the DDL events below |
+    | `none dml`        |      | Includes none of the DML events below |
+    | `insert`          | DML  | The `INSERT` DML event                |
+    | `update`          | DML  | The `UPDATE` DML event                |
+    | `delete`          | DML  | The `DELETE` DML event                |
+    | `create database` | DDL  | The `CREATE DATABASE` DDL event       |
+    | `drop database`   | DDL  | The `DROP DATABASE` DDL event         |
+    | `create table`    | DDL  | The `CREATE TABLE` DDL event          |
+    | `create index`    | DDL  | The `CREATE INDEX` DDL event          |
+    | `drop table`      | DDL  | The `DROP TABLE` DDL event            |
+    | `truncate table`  | DDL  | The `TRUNCATE TABLE` DDL event        |
+    | `rename table`    | DDL  | The `RENAME TABLE` DDL event          |
+    | `drop index`      | DDL  | The `DROP INDEX` DDL event            |
+    | `alter table`     | DDL  | The `ALTER TABLE` DDL event           |
 
--   `sql-pattern` : 指定された DDL SQL ステートメントをフィルタリングするために使用されます。一致ルールでは正規表現の使用がサポートされています。たとえば、 `"^DROP\\s+PROCEDURE"` 。
+-   `sql-pattern`: it is used to filter specified DDL SQL statements. The matching rule supports using a regular expression. For example, `"^DROP\\s+PROCEDURE"`.
 
--   `action` : 文字列 ( `Do` / `Ignore` )。以下のルールに基づいてフィルタリングするかどうかを判断します。 2 つのルールのいずれかが満たされる場合、binlogはフィルタリングされます。それ以外の場合、binlogはフィルタリングされません。
+-   `action`: the string (`Do`/`Ignore`). Based on the following rules, it judges whether to filter. If either of the two rules is satisfied, the binlog is filtered; otherwise, the binlog is not filtered.
 
-    -   `Do` : 許可リスト。binlogは、次の 2 つの条件のいずれかでフィルタリングされます。
-        -   イベントのタイプはルールのリスト`event`にありません。
-        -   イベントの SQL ステートメントはルールの`sql-pattern`と一致できません。
-    -   `Ignore` : ブロックリスト。binlogは、次の 2 つの条件のいずれかでフィルタリングされます。
-        -   イベントのタイプはルールのリスト`event`にあります。
-        -   イベントの SQL ステートメントは、ルールの`sql-pattern`と照合できます。
-    -   複数のルールが同じテーブルに一致する場合、ルールは順番に適用されます。ブロック リストは許可リストよりも高い優先度を持ちます。たとえば、 `Ignore`と`Do`の両方のルールが同じテーブルに適用される場合、 `Ignore`ルールが有効になります。
+    -   `Do`: the allow list. The binlog is filtered in either of the following two conditions:
+        -   The type of the event is not in the `event` list of the rule.
+        -   The SQL statement of the event cannot be matched by `sql-pattern` of the rule.
+    -   `Ignore`: the block list. The binlog is filtered in either of the following two conditions:
+        -   The type of the event is in the `event` list of the rule.
+        -   The SQL statement of the event can be matched by `sql-pattern` of the rule.
+    -   When multiple rules match the same table, the rules are applied sequentially. The block list has a higher priority than the allow list. For example, if both the `Ignore` and `Do` rules are applied to the same table, the `Ignore` rule takes effect.
 
-## 使用例 {#usage-examples}
+## Usage examples {#usage-examples}
 
-このセクションでは、シャーディング (シャードされたスキーマとテーブル) のシナリオでの使用例を示します。
+This section shows the usage examples in the scenario of sharding (sharded schemas and tables).
 
-### すべてのシャーディング削除操作をフィルタリングする {#filter-all-sharding-deletion-operations}
+### Filter all sharding deletion operations {#filter-all-sharding-deletion-operations}
 
-すべての削除操作をフィルターで除外するには、次の 2 つのフィルター ルールを構成します。
+To filter out all deletion operations, configure the following two filtering rules:
 
--   `filter-table-rule` `test_*`に一致するすべてのテーブルの`TRUNCATE TABLE` 、 `DROP TABLE` 、および`DELETE STATEMENT`操作を除外します。 `t_*`パターン。
--   `filter-schema-rule` `test_*`パターンに一致するすべてのスキーマの`DROP DATABASE`操作を除外します。
+-   `filter-table-rule` filters out the `TRUNCATE TABLE`, `DROP TABLE` and `DELETE STATEMENT` operations of all tables that match the `test_*`.`t_*` pattern.
+-   `filter-schema-rule` filters out the `DROP DATABASE` operation of all schemas that match the `test_*` pattern.
 
 ```yaml
 filters:
@@ -92,16 +92,16 @@ filters:
     action: Ignore
 ```
 
-### シャーディング DML ステートメントのみを移行する {#only-migrate-sharding-dml-statements}
+### Only migrate sharding DML statements {#only-migrate-sharding-dml-statements}
 
-シャーディング DML ステートメントのみを移行するには、次の 2 つのフィルタリング ルールを構成します。
+To only migrate sharding DML statements, configure the following two filtering rules:
 
--   `do-table-rule` `test_*`に一致するすべてのテーブルの`CREATE TABLE` 、 `INSERT` 、 `UPDATE` 、および`DELETE`ステートメントのみを移行します。 `t_*`パターン。
--   `do-schema-rule`パターン`test_*`に一致するすべてのスキーマのステートメント`CREATE DATABASE`のみを移行します。
+-   `do-table-rule` only migrates the `CREATE TABLE`, `INSERT`, `UPDATE` and `DELETE` statements of all tables that match the `test_*`.`t_*` pattern.
+-   `do-schema-rule` only migrates the `CREATE DATABASE` statement of all schemas that match the `test_*` pattern.
 
-> **ノート：**
+> **Note:**
 >
-> `CREATE DATABASE/TABLE`ステートメントが移行される理由は、DML ステートメントはスキーマとテーブルの作成後にのみ移行できるためです。
+> The reason why the `CREATE DATABASE/TABLE` statement is migrated is that you can migrate DML statements only after the schema and table are created.
 
 ```yaml
 filters:
@@ -116,9 +116,9 @@ filters:
     action: Do
 ```
 
-### TiDB がサポートしていない SQL ステートメントをフィルタリングして除外します。 {#filter-out-the-sql-statements-that-tidb-does-not-support}
+### Filter out the SQL statements that TiDB does not support {#filter-out-the-sql-statements-that-tidb-does-not-support}
 
-TiDB がサポートしていない`PROCEDURE`ステートメントをフィルタリングして除外するには、次の`filter-procedure-rule`を構成します。
+To filter out the `PROCEDURE` statements that TiDB does not support, configure the following `filter-procedure-rule`:
 
 ```yaml
 filters:
@@ -129,17 +129,17 @@ filters:
     action: Ignore
 ```
 
-`filter-procedure-rule` `test_*`に一致するすべてのテーブルの`^CREATE\\s+PROCEDURE`および`^DROP\\s+PROCEDURE`ステートメントを除外します。 `t_*`パターン。
+`filter-procedure-rule` filters out the `^CREATE\\s+PROCEDURE` and `^DROP\\s+PROCEDURE` statements of all tables that match the `test_*`.`t_*` pattern.
 
-### TiDB パーサーがサポートしていない SQL ステートメントをフィルターで除外します。 {#filter-out-the-sql-statements-that-the-tidb-parser-does-not-support}
+### Filter out the SQL statements that the TiDB parser does not support {#filter-out-the-sql-statements-that-the-tidb-parser-does-not-support}
 
-TiDB パーサーがサポートしていない SQL ステートメントの場合、DM はそれらを解析して`schema` / `table`の情報を取得できません。したがって、グローバル フィルタリング ルールを使用する必要があります: `schema-pattern: "*"` 。
+For the SQL statements that the TiDB parser does not support, DM cannot parse them and get the `schema`/`table` information. So you must use the global filtering rule: `schema-pattern: "*"`.
 
-> **ノート：**
+> **Note:**
 >
-> 移行する必要があるデータがフィルターで除外されないようにするには、グローバル フィルター ルールをできるだけ厳密に構成する必要があります。
+> To avoid filtering out data that need to be migrated, you must configure the global filtering rule as strictly as possible.
 
-TiDB パーサー (一部のバージョン) がサポートしていない`PARTITION`ステートメントをフィルターで除外するには、次のフィルター ルールを構成します。
+To filter out the `PARTITION` statements that the TiDB parser (of some version) does not support, configure the following filtering rule:
 
 ```yaml
 filters:

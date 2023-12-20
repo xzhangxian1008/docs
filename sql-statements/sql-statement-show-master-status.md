@@ -3,13 +3,11 @@ title: SHOW MASTER STATUS
 summary: An overview of the usage of SHOW MASTER STATUS for the TiDB database.
 ---
 
-# マスターステータスを表示 {#show-master-status}
+# SHOW MASTER STATUS {#show-master-status}
 
-`SHOW MASTER STATUS`ステートメントは、クラスター内の最新の TSO を表示します。
+The `SHOW MASTER STATUS` statement displays the latest TSO in the cluster.
 
-## 例 {#examples}
-
-{{< copyable "" >}}
+## Examples {#examples}
 
 ```sql
 SHOW MASTER STATUS;
@@ -24,13 +22,23 @@ SHOW MASTER STATUS;
 1 row in set (0.00 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-`SHOW MASTER STATUS`の出力は MySQL と一致するように設計されています。ただし、MySQL の結果はbinlogの場所情報であり、TiDB の結果は最新の TSO 情報であるという点で、実行結果は異なります。
+The output of `SHOW MASTER STATUS` is designed to match MySQL. However, the execution results are different in that the MySQL result is the binlog location information and the TiDB result is the latest TSO information.
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [ポンプのステータスを表示](/sql-statements/sql-statement-show-pump-status.md)
--   [ドレイナーステータスを表示](/sql-statements/sql-statement-show-drainer-status.md)
--   [ポンプステータスの変更](/sql-statements/sql-statement-change-pump.md)
--   [ドレイナーステータスの変更](/sql-statements/sql-statement-change-drainer.md)
+<CustomContent platform="tidb">
+
+-   [SHOW PUMP STATUS](/sql-statements/sql-statement-show-pump-status.md)
+-   [SHOW DRAINER STATUS](/sql-statements/sql-statement-show-drainer-status.md)
+-   [CHANGE PUMP STATUS](/sql-statements/sql-statement-change-pump.md)
+-   [CHANGE DRAINER STATUS](/sql-statements/sql-statement-change-drainer.md)
+
+</CustomContent>
+
+<CustomContent platform="tidb-cloud">
+
+-   [`SHOW TABLE STATUS`](/sql-statements/sql-statement-show-table-status.md)
+
+</CustomContent>

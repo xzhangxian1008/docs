@@ -3,33 +3,33 @@ title: SHOW GRANTS | TiDB SQL Statement Reference
 summary: An overview of the usage of SHOW GRANTS for the TiDB database.
 ---
 
-# 助成金を表示する {#show-grants}
+# SHOW GRANTS {#show-grants}
 
-このステートメントは、ユーザーに関連付けられた権限のリストを示します。 MySQL と同様、 `USAGE`権限はTiDB にログインできることを示します。
+This statement shows a list of privileges associated with a user. As in MySQL, the `USAGE` privileges denotes the ability to login to TiDB.
 
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
 **ShowGrantsStmt:**
 
 ![ShowGrantsStmt](/media/sqlgram/ShowGrantsStmt.png)
 
-**ユーザー名:**
+**Username:**
 
 ![Username](/media/sqlgram/Username.png)
 
-**ロールの使用:**
+**UsingRoles:**
 
 ![UsingRoles](/media/sqlgram/UsingRoles.png)
 
-**役割名リスト:**
+**RolenameList:**
 
 ![RolenameList](/media/sqlgram/RolenameList.png)
 
-**役割名:**
+**Rolename:**
 
 ![Rolename](/media/sqlgram/Rolename.png)
 
-## 例 {#examples}
+## Examples {#examples}
 
 ```sql
 mysql> SHOW GRANTS;
@@ -58,11 +58,11 @@ mysql> SHOW GRANTS FOR u1;
 2 rows in set (0.00 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-TiDB の`SHOW GRANTS`ステートメントは MySQL と完全な互換性があります。互換性の違いを見つけた場合は、 [GitHub の問題](https://github.com/pingcap/tidb/issues/new/choose)を介して報告してください。
+The `SHOW GRANTS` statement in TiDB is fully compatible with MySQL. If you find any compatibility differences, [report a bug](https://docs.pingcap.com/tidb/stable/support).
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [ユーザーの作成を表示](/sql-statements/sql-statement-show-create-user.md)
--   [許す](/sql-statements/sql-statement-grant-privileges.md)
+-   [SHOW CREATE USER](/sql-statements/sql-statement-show-create-user.md)
+-   [GRANT](/sql-statements/sql-statement-grant-privileges.md)

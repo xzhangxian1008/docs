@@ -3,11 +3,13 @@ title: CLUSTER_CONFIG
 summary: Learn the `CLUSTER_CONFIG` information_schema table.
 ---
 
-# クラスター構成 {#cluster-config}
+# CLUSTER_CONFIG {#cluster-config}
 
-`CLUSTER_CONFIG`クラスター構成テーブルを使用して、クラスター内のすべてのサーバーコンポーネントの現在の構成を取得できます。これにより、同様の情報を取得するには各インスタンスの HTTP API エンドポイントにアクセスする必要があった TiDB の以前のリリースよりも使用法が簡素化されます。
+You can use the `CLUSTER_CONFIG` cluster configuration table to get the current configuration of all server components in the cluster. This simplifies the usage over earlier releases of TiDB, where obtaining similar information would require accessing the HTTP API endpoints of each instance.
 
-{{< copyable "" >}}
+> **Note:**
+>
+> This table is only applicable to TiDB Self-Hosted and not available on [TiDB Cloud](https://docs.pingcap.com/tidbcloud/).
 
 ```sql
 USE information_schema;
@@ -25,16 +27,14 @@ DESC cluster_config;
 +----------+--------------+------+------+---------+-------+
 ```
 
-フィールドの説明:
+Field description:
 
--   `TYPE` : インスタンスのタイプ。オプションの値は`tidb` 、 `pd` 、および`tikv`です。
--   `INSTANCE` : インスタンスのサービスアドレス。
--   `KEY` : 設定項目名。
--   `VALUE` : 設定項目の値。
+-   `TYPE`: The instance type. The optional values are `tidb`, `pd`, and `tikv`.
+-   `INSTANCE`: The service address of the instance.
+-   `KEY`: The configuration item name.
+-   `VALUE`: The configuration item value.
 
-次の例は、 `CLUSTER_CONFIG`テーブルを使用して TiKV インスタンスの`coprocessor`構成をクエリする方法を示しています。
-
-{{< copyable "" >}}
+The following example shows how to query the `coprocessor` configuration on the TiKV instance using the `CLUSTER_CONFIG` table:
 
 ```sql
 SELECT * FROM cluster_config WHERE type='tikv' AND `key` LIKE 'coprocessor%';

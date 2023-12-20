@@ -3,11 +3,11 @@ title: REPLACE | TiDB SQL Statement Reference
 summary: An overview of the usage of REPLACE for the TiDB database.
 ---
 
-# 交換 {#replace}
+# REPLACE {#replace}
 
-`REPLACE`ステートメントは、意味的には`DELETE` + `INSERT`ステートメントを組み合わせたものです。アプリケーションコードを簡素化するために使用できます。
+The `REPLACE` statement is semantically a combined `DELETE`+`INSERT` statement. It can be used to simplify application code.
 
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
 ```ebnf+diagram
 ReplaceIntoStmt ::=
@@ -32,7 +32,7 @@ InsertValues ::=
 |   'SET' ColumnSetValue? ( ',' ColumnSetValue )*
 ```
 
-## 例 {#examples}
+## Examples {#examples}
 
 ```sql
 mysql> CREATE TABLE t1 (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, c1 INT NOT NULL);
@@ -66,13 +66,13 @@ mysql> SELECT * FROM t1;
 3 rows in set (0.00 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-TiDB の`REPLACE`ステートメントは MySQL と完全な互換性があります。互換性の違いを見つけた場合は、 [GitHub の問題](https://github.com/pingcap/tidb/issues/new/choose)を介して報告してください。
+The `REPLACE` statement in TiDB is fully compatible with MySQL. If you find any compatibility differences, [report a bug](https://docs.pingcap.com/tidb/stable/support).
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [消去](/sql-statements/sql-statement-delete.md)
--   [入れる](/sql-statements/sql-statement-insert.md)
--   [選択する](/sql-statements/sql-statement-select.md)
--   [アップデート](/sql-statements/sql-statement-update.md)
+-   [DELETE](/sql-statements/sql-statement-delete.md)
+-   [INSERT](/sql-statements/sql-statement-insert.md)
+-   [SELECT](/sql-statements/sql-statement-select.md)
+-   [UPDATE](/sql-statements/sql-statement-update.md)

@@ -3,18 +3,18 @@ title: TiDB Log Backup and PITR Command Manual
 summary: Learn about the commands of TiDB log backup and point-in-time recovery.
 ---
 
-# TiDB ログ バックアップと PITR コマンド マニュアル {#tidb-log-backup-and-pitr-command-manual}
+# TiDB Log Backup and PITR Command Manual {#tidb-log-backup-and-pitr-command-manual}
 
-このドキュメントでは、TiDB ログ バックアップおよびポイントインタイム リカバリ (PITR) で使用されるコマンドについて説明します。
+This document describes the commands used in TiDB log backup and point-in-time recovery (PITR).
 
-ログ バックアップと PITR の詳細については、以下を参照してください。
+For more information about log backup and PITR, refer to:
 
--   [ログのバックアップと PITR ガイド](/br/br-pitr-guide.md)
--   [バックアップと復元の使用例](/br/backup-and-restore-use-cases.md)
+-   [Log Backup and PITR Guide](/br/br-pitr-guide.md)
+-   [Back up and Restore Use Cases](/br/backup-and-restore-use-cases.md)
 
-## ログのバックアップを実行する {#perform-log-backup}
+## Perform log backup {#perform-log-backup}
 
-`br log`コマンドを使用してログ バックアップを開始および管理できます。
+You can start and manage log backup using the `br log` command.
 
 ```shell
 ./br log --help
@@ -34,21 +34,21 @@ Available Commands:
   truncate   truncate the log data until sometime
 ```
 
-各サブコマンドは次のように説明されます。
+Each subcommand is described as follows:
 
--   `br log start` : ログ バックアップ タスクを開始します。
--   `br log status` : ログ バックアップ タスクのステータスをクエリします。
--   `br log pause` : ログ バックアップ タスクを一時停止します。
--   `br log resume` : 一時停止したログ バックアップ タスクを再開します。
--   `br log stop` : ログ バックアップ タスクを停止し、タスクのメタデータを削除します。
--   `br log truncate` : バックアップstorageからログ バックアップ データをクリーンアップします。
--   `br log metadata` : ログ バックアップ データのメタデータをクエリします。
+-   `br log start`: start a log backup task.
+-   `br log status`: query the status of the log backup task.
+-   `br log pause`: pause a log backup task.
+-   `br log resume`: resume a paused log backup task.
+-   `br log stop`: stop a log backup task and delete the task metadata.
+-   `br log truncate`: clean up the log backup data from the backup storage.
+-   `br log metadata`: query the metadata of the log backup data.
 
-### バックアップタスクを開始する {#start-a-backup-task}
+### Start a backup task {#start-a-backup-task}
 
-`br log start`コマンドを実行してログ バックアップ タスクを開始できます。このタスクは TiDB クラスターのバックグラウンドで実行され、KVstorageの変更ログをバックアップstorageに自動的にバックアップします。
+You can run the `br log start` command to start a log backup task. This task runs in the background of your TiDB cluster and automatically backs up the change log of KV storage to the backup storage.
 
-`br log start --help`を実行してヘルプ情報を表示します。
+Run `br log start --help` to see the help information:
 
 ```shell
 ./br log start --help
@@ -71,26 +71,26 @@ Global Flags:
 
 ```
 
-出力例には、共通パラメータのみが示されています。これらのパラメータは次のように説明されます。
+The example output only shows the common parameters. These parameters are described as follows:
 
--   `--start-ts` : ログ バックアップの開始タイムスタンプを指定します。このパラメータが指定されていない場合、バックアップ プログラムは現在時刻を`start-ts`として使用します。
--   `task-name` : ログバックアップのタスク名を指定します。この名前は、バックアップ タスクのクエリ、一時停止、再開にも使用されます。
--   `--ca` 、 `--cert` 、 `--key` : TiKV および PD と通信するための mTLS 暗号化方式を指定します。
--   `--pd` : バックアップ クラスターの PD アドレスを指定します。ログ バックアップ タスクを開始するには、 BR がPD にアクセスする必要があります。
--   `--storage` : バックアップstorageアドレスを指定します。現在、 BR はログ バックアップ用のstorageとして Amazon S3、Google Cloud Storage (GCS)、または Azure Blob Storage をサポートしています。前述のコマンドでは、例として Amazon S3 を使用しています。詳細は[バックアップストレージのURI形式](/br/backup-and-restore-storages.md#uri-format)を参照してください。
+-   `--start-ts`: specifies the start timestamp for the log backup. If this parameter is not specified, the backup program uses the current time as `start-ts`.
+-   `task-name`: specifies the task name for the log backup. This name is also used to query, pause, and resume the backup task.
+-   `--ca`, `--cert`, `--key`: specifies the mTLS encryption method to communicate with TiKV and PD.
+-   `--pd`: specifies the PD address for the backup cluster. BR needs to access PD to start the log backup task.
+-   `--storage`: specifies the backup storage address. Currently, BR supports Amazon S3, Google Cloud Storage (GCS), or Azure Blob Storage as the storage for log backup. The preceding command uses Amazon S3 as an example. For details, see [URI Formats of External Storage Services](/external-storage-uri.md).
 
-使用例：
+Usage example:
 
 ```shell
 ./br log start --task-name=pitr --pd="${PD_IP}:2379" \
 --storage='s3://backup-101/logbackup?access-key=${access-key}&secret-access-key=${secret-access-key}"'
 ```
 
-### バックアップステータスを問い合わせる {#query-the-backup-status}
+### Query the backup status {#query-the-backup-status}
 
-`br log status`コマンドを実行してバックアップ ステータスをクエリできます。
+You can run the `br log status` command to query the backup status.
 
-`br log status --help`を実行してヘルプ情報を表示します。
+Run `br log status --help` to see the help information:
 
 ```shell
 ./br log status --help
@@ -112,15 +112,15 @@ Global Flags:
 
 ```
 
-出力例では、バックアップ タスクの名前を指定するために`task-name`が使用されています。デフォルト値は`*`で、すべてのタスクのステータスをクエリすることを意味します。
+In the example output, `task-name` is used to specify the name of the backup task. The default value is `*`, which means querying the status of all tasks.
 
-使用例：
+Usage example:
 
 ```shell
 ./br log status --task-name=pitr --pd="${PD_IP}:2379"
 ```
 
-期待される出力:
+Expected output:
 
 ```shell
 ● Total 1 Tasks.
@@ -134,20 +134,20 @@ Global Flags:
 checkpoint[global]: 2022-07-25 22:52:15.518 +0800; gap=2m52s
 ```
 
-出力フィールドは次のように説明されます。
+The output fields are described as follows:
 
--   `status` : バックアップ タスクのステータス。 `NORMAL` 、 `ERROR` 、または`PAUSE`のいずれかです。
--   `start` : バックアップタスクの開始時刻。これは、バックアップ タスクの開始時に指定された`start-ts`値です。
--   `storage` : バックアップstorageアドレス。
--   `speed` : バックアップ タスクの合計 QPS。 QPS は、1 秒あたりにバックアップされるログの数を意味します。
--   `checkpoint [global]` : このチェックポイントより前のすべてのデータがバックアップstorageにバックアップされます。これは、バックアップ データの復元に使用できる最新のタイムスタンプです。
--   `error [store]` : ログ バックアップ プログラムがstorageノードで発生したエラー。
+-   `status`: the status of the backup task, which can be `NORMAL`, `ERROR`, or `PAUSE`.
+-   `start`: the start time of the backup task. It is the `start-ts` value specified when the backup task is started.
+-   `storage`: the backup storage address.
+-   `speed`: the total QPS of the backup task. QPS means the number of logs backed per second.
+-   `checkpoint [global]`: all data before this checkpoint is backed up to the backup storage. This is the latest timestamp available for restoring the backup data.
+-   `error [store]`: the error the log backup program encounters on the storage node.
 
-### バックアップタスクの一時停止と再開 {#pause-and-resume-a-backup-task}
+### Pause and resume a backup task {#pause-and-resume-a-backup-task}
 
-`br log pause`コマンドを実行すると、実行中のバックアップ タスクを一時停止できます。
+You can run the `br log pause` command to pause a running backup task.
 
-`br log pause --help`を実行してヘルプ情報を表示します。
+Run `br log pause --help` to see the help information:
 
 ```shell
 ./br log pause --help
@@ -168,20 +168,20 @@ Global Flags:
  -u, --pd strings             PD address (default [127.0.0.1:2379])
 ```
 
-> **ノート：**
+> **Note:**
 >
-> -   ログ バックアップ タスクが一時停止された後、変更ログを生成する MVCC データが削除されないように、バックアップ プログラムは現在のバックアップ チェックポイントをサービス セーフポイントとして自動的に設定し、最新 24 時間以内の MVCC データを保持します。バックアップ タスクが 24 時間以上一時停止された場合、対応するデータはガベージ コレクションされ、バックアップされません。
-> -   MVCC データを保持しすぎると、TiDB クラスターのstorage容量とパフォーマンスに悪影響が生じます。したがって、時間内にバックアップ タスクを再開することをお勧めします。
+> -   After the log backup task is paused, to prevent the MVCC data that generates the change log from being deleted, the backup program automatically sets the current backup checkpoint as the service safepoint, which retains MVCC data within the latest 24 hours. If the backup task is paused for more than 24 hours, the corresponding data is garbage collected and is not backed up.
+> -   Retaining too much MVCC data has a negative impact on the storage capacity and performance of the TiDB cluster. Therefore, it is recommended to resume the backup task in time.
 
-使用例：
+Usage example:
 
 ```shell
 ./br log pause --task-name=pitr --pd="${PD_IP}:2379"
 ```
 
-`br log resume`コマンドを実行すると、一時停止したバックアップ タスクを再開できます。
+You can run the `br log resume` command to resume a paused backup task.
 
-`br log resume --help`を実行してヘルプ情報を表示します。
+Run `br log resume --help` to see the help information:
 
 ```shell
 ./br log resume --help
@@ -201,23 +201,23 @@ Global Flags:
  -u, --pd strings             PD address (default [127.0.0.1:2379])
 ```
 
-バックアップ タスクが 24 時間以上一時停止された後、 `br log resume`実行するとエラーが報告され、 BR はバックアップ データが失われたことを示すプロンプトを表示します。このエラーに対処するには、 [バックアップと復元に関するよくある質問](/faq/backup-and-restore-faq.md#what-should-i-do-if-the-error-message-errbackupgcsafepointexceeded-is-returned-when-using-the-br-log-resume-command-to-resume-a-suspended-task)を参照してください。
+After the backup task is paused for more than 24 hours, running `br log resume` reports an error, and BR prompts that backup data is lost. To handle this error, refer to [Backup &#x26; Restore FAQs](/faq/backup-and-restore-faq.md#what-should-i-do-if-the-error-message-errbackupgcsafepointexceeded-is-returned-when-using-the-br-log-resume-command-to-resume-a-suspended-task).
 
-使用例：
+Usage example:
 
 ```shell
 ./br log resume --task-name=pitr --pd="${PD_IP}:2379"
 ```
 
-### バックアップタスクを停止して再開する {#stop-and-restart-a-backup-task}
+### Stop and restart a backup task {#stop-and-restart-a-backup-task}
 
-`br log stop`コマンドを実行してログ バックアップ タスクを停止し、元の`--storage`ディレクトリを使用して停止したバックアップ タスクを再開できます。
+You can stop a log backup task by running the `br log stop` command and restart a backup task that is stopped by using the original `--storage` directory.
 
-#### バックアップタスクを停止する {#stop-a-backup-task}
+#### Stop a backup task {#stop-a-backup-task}
 
-`br log stop`コマンドを実行すると、ログ バックアップ タスクを停止できます。このコマンドは、バックアップ クラスター内のタスク メタデータをクリーンアップします。
+You can run the `br log stop` command to stop a log backup task. This command cleans up the task metadata in the backup cluster.
 
-`br log stop --help`を実行してヘルプ情報を表示します。
+Run `br log stop --help` to see the help information:
 
 ```shell
 ./br log stop --help
@@ -237,29 +237,29 @@ Global Flags:
  -u, --pd strings             PD address (default [127.0.0.1:2379])
 ```
 
-> **ノート：**
+> **Note:**
 >
-> このコマンドは注意して使用してください。ログ バックアップ タスクを一時停止する必要がある場合は、代わりに`br log pause`と`br log resume`を使用してください。
+> Use this command with caution. If you need to pause a log backup task, use `br log pause` and `br log resume` instead.
 
-使用例：
+Usage example:
 
 ```shell
 ./br log stop --task-name=pitr --pd="${PD_IP}:2379"
 ```
 
-#### バックアップタスクを再開する {#restart-a-backup-task}
+#### Restart a backup task {#restart-a-backup-task}
 
-`br log stop`コマンドを実行してログ バックアップ タスクを停止した後、別の`--storage`ディレクトリに新しいログ バックアップ タスクを作成するか、 `br log start`コマンドを実行して元の`--storage`ディレクトリでログ バックアップ タスクを再開できます。元の`--storage`ディレクトリでタスクを再開する場合は、次の点に注意してください。
+After running the `br log stop` command to stop a log backup task, you can create a new log backup task in another `--storage` directory or restart the log backup task in the original `--storage` directory by running the `br log start` command. If you restart the task in the original `--storage` directory, pay attention to the following points:
 
--   タスクを再開するための`--storage`ディレクトリのパラメータは、停止したタスクと同じである必要があります。
--   `--start-ts`指定する必要はありません。 BR は、最後のバックアップ チェックポイントからバックアップを自動的に開始します。
--   タスクが長期間停止され、複数のバージョンのデータがガベージ コレクションされた場合、タスクを再開しようとするとエラー`BR:Backup:ErrBackupGCSafepointExceeded`が報告されます。この場合、別`--storage`ディレクトリに新しいログ バックアップ タスクを作成する必要があります。
+-   Parameters of the `--storage` directory for restarting a task must be the same as the task that is stopped.
+-   The `--start-ts` does not need to be specified. BR automatically starts the backup from the last backup checkpoint.
+-   If the task is stopped for a long time and multiple versions of the data have been garbage collected, the error `BR:Backup:ErrBackupGCSafepointExceeded` is reported when you attempt to restart the task. In this case, you have to create a new log backup task in another `--storage` directory.
 
-### バックアップデータをクリーンアップする {#clean-up-backup-data}
+### Clean up backup data {#clean-up-backup-data}
 
-`br log truncate`コマンドを実行して、古いログ バックアップ データまたは不要になったログ バックアップ データをクリーンアップできます。
+You can run the `br log truncate` command to clean up the outdated or no longer needed log backup data.
 
-`br log truncate --help`を実行してヘルプ情報を表示します。
+Run `br log truncate --help` to see the help information:
 
 ```shell
 ./br log truncate --help
@@ -279,20 +279,20 @@ Global Flags:
   -s, --storage string         specify the url where backup storage, eg, "s3://bucket/path/prefix"
 ```
 
-このコマンドはバックアップstorageにのみアクセスし、TiDB クラスターにはアクセスしません。一部のパラメータは次のように説明されます。
+This command only accesses the backup storage and does not access the TiDB cluster. Some parameters are described as follows:
 
--   `--dry-run` : コマンドを実行しますが、実際にはファイルを削除しません。
--   `--until` : 指定されたタイムスタンプより前のすべてのログ バックアップ データを削除します。
--   `--storage` : バックアップstorageアドレス。現在、 BR はログ バックアップ用のstorageとして Amazon S3、GCS、または Azure Blob Storage をサポートしています。詳細は[バックアップストレージのURI形式](/br/backup-and-restore-storages.md#uri-format)を参照してください。
+-   `--dry-run`: run the command but do not really delete the files.
+-   `--until`: delete all log backup data before the specified timestamp.
+-   `--storage`: the backup storage address. Currently, BR supports Amazon S3, GCS, or Azure Blob Storage as the storage for log backup. For details, see [URI Formats of External Storage Services](/external-storage-uri.md).
 
-使用例：
+Usage example:
 
 ```shell
 ./br log truncate --until='2022-07-26 21:20:00+0800' \
 –-storage='s3://backup-101/logbackup?access-key=${access-key}&secret-access-key=${secret-access-key}"'
 ```
 
-期待される出力:
+Expected output:
 
 ```shell
 Reading Metadata... DONE; take = 277.911599ms
@@ -302,11 +302,11 @@ Clearing data files... DONE; take = 43.504161ms, kv-count = 53, kv-size = 4573(4
 Removing metadata... DONE; take = 24.038962ms
 ```
 
-### バックアップのメタデータをビュー {#view-the-backup-metadata}
+### View the backup metadata {#view-the-backup-metadata}
 
-`br log metadata`コマンドを実行すると、復元可能な最も古いタイムスタンプと最新のタイムスタンプなど、storageシステム内のバックアップ メタデータを表示できます。
+You can run the `br log metadata` command to view the backup metadata in the storage system, such as the earliest and latest timestamp that can be restored.
 
-`br log metadata --help`を実行してヘルプ情報を表示します。
+Run `br log metadata --help` to see the help information:
 
 ```shell
 ./br log metadata --help
@@ -322,27 +322,27 @@ Global Flags:
   -s, --storage string         specify the url where backup storage, eg, "s3://bucket/path/prefix"
 ```
 
-このコマンドはバックアップstorageにのみアクセスし、TiDB クラスターにはアクセスしません。
+This command only accesses the backup storage and does not access the TiDB cluster.
 
-`--storage`パラメータは、バックアップstorageアドレスを指定するために使用されます。現在、 BR はログ バックアップ用のstorageとして Amazon S3、GCS、または Azure Blob Storage をサポートしています。詳細は[バックアップストレージのURI形式](/br/backup-and-restore-storages.md#uri-format)を参照してください。
+The `--storage` parameter is used to specify the backup storage address. Currently, BR supports Amazon S3, GCS, or Azure Blob Storage as the storage for log backup. For details, see [URI Formats of External Storage Services](/external-storage-uri.md).
 
-使用例：
+Usage example:
 
 ```shell
 ./br log metadata –-storage='s3://backup-101/logbackup?access-key=${access-key}&secret-access-key=${secret-access-key}"'
 ```
 
-期待される出力:
+Expected output:
 
 ```shell
 [2022/07/25 23:02:57.236 +08:00] [INFO] [collector.go:69] ["log metadata"] [log-min-ts=434582449885806593] [log-min-date="2022-07-14 20:08:03.268 +0800"] [log-max-ts=434834300106964993] [log-max-date="2022-07-25 23:00:15.618 +0800"]
 ```
 
-## 指定した時点への復元 (PITR) {#restore-to-a-specified-point-in-time-pitr}
+## Restore to a specified point in time (PITR) {#restore-to-a-specified-point-in-time-pitr}
 
-`br restore point`コマンドを実行して、新しいクラスターで PITR を実行するか、ログ バックアップ データを復元するだけです。
+You can run the `br restore point` command to perform a PITR on a new cluster or just restore the log backup data.
 
-`br restore point --help`を実行してヘルプ情報を表示します。
+Run `br restore point --help` to see the help information:
 
 ```shell
 ./br restore point --help
@@ -366,16 +366,16 @@ Global Flags:
  -s, --storage string         specify the url where backup storage, eg, "s3://bucket/path/prefix"
 ```
 
-出力例には、共通パラメータのみが示されています。これらのパラメータは次のように説明されます。
+The example output only shows the common parameters. These parameters are described as follows:
 
--   `--full-backup-storage` : スナップショット (フル) バックアップのstorageアドレス。 PITR を使用するには、このパラメータを指定し、復元タイムスタンプより前の最新のスナップショット バックアップを選択します。ログバックアップデータのみをリストアする場合は、このパラメータを省略できます。現在、 BR はログ バックアップ用のstorageとして Amazon S3、GCS、または Azure Blob Storage をサポートしています。詳細は[バックアップストレージのURI形式](/br/backup-and-restore-storages.md#uri-format)を参照してください。
--   `--restored-ts` : データを復元するタイムスタンプ。このパラメータが指定されていない場合、 BR はログ バックアップで使用可能な最新のタイムスタンプ、つまりバックアップ データのチェックポイントにデータを復元します。
--   `--start-ts` : ログ バックアップ データを復元する開始タイムスタンプ。ログ バックアップ データのみを復元する必要がある場合は、このパラメータを指定する必要があります。
--   `--pd` : 復元クラスターの PD アドレス。
--   `--ca` 、 `--cert` 、 `--key` : TiKV および PD と通信するための mTLS 暗号化方式を指定します。
--   `--storage` : ログバックアップのstorageアドレス。現在、 BR はログ バックアップ用のstorageとして Amazon S3、GCS、または Azure Blob Storage をサポートしています。詳細は[バックアップストレージのURI形式](/br/backup-and-restore-storages.md#uri-format)を参照してください。
+-   `--full-backup-storage`: the storage address for the snapshot (full) backup. To use PITR, specify this parameter and choose the latest snapshot backup before the restore timestamp. To restore only log backup data, you can omit this parameter. Currently, BR supports Amazon S3, GCS, or Azure Blob Storage as the storage for log backup. For details, see [URI Formats of External Storage Services](/external-storage-uri.md).
+-   `--restored-ts`: the timestamp that you want to restore data to. If this parameter is not specified, BR restores data to the latest timestamp available in the log backup, that is, the checkpoint of the backup data.
+-   `--start-ts`: the start timestamp that you want to restore log backup data from. If you only need to restore log backup data, you must specify this parameter.
+-   `--pd`: the PD address of the restore cluster.
+-   `--ca`, `--cert`, `--key`: specify the mTLS encryption method to communicate with TiKV and PD.
+-   `--storage`: the storage address for the log backup. Currently, BR supports Amazon S3, GCS, or Azure Blob Storage as the storage for log backup. For details, see [URI Formats of External Storage Services](/external-storage-uri.md).
 
-使用例：
+Usage example:
 
 ```shell
 ./br restore point --pd="${PD_IP}:2379"
@@ -389,7 +389,7 @@ Restore KV Files <--------------------------------------------------------------
 "restore log success summary"] [total-take=192.955533ms] [restore-from=434693681289625602] [restore-to=434693753549881345] [total-kv-count=33] [total-size=21551]
 ```
 
-> **ノート：**
+> **Note:**
 >
-> -   一定期間のログバックアップデータを繰り返し復元することはできません。範囲`[t1=10, t2=20)`のログバックアップデータを繰り返しリストアすると、リストアされたデータに不整合が生じる可能性があります。
-> -   異なる期間のログ データを複数のバッチでリストアする場合は、ログ データが連続した順序でリストアされるようにしてください。 `[t1, t2)` 、 `[t2, t3)` 、 `[t3, t4)`のログ バックアップ データを連続してリストアすると、リストアされたデータの整合性が保たれます。ただし、 `[t1, t2)`復元し、その後`[t2, t3)`スキップして`[t3, t4)`を復元すると、復元されたデータに不整合が生じる可能性があります。
+> -   You cannot restore the log backup data of a certain time period repeatedly. If you restore the log backup data of a range `[t1=10, t2=20)` repeatedly, the restored data might be inconsistent.
+> -   When you restore log data of different time periods in multiple batches, ensure that the log data is restored in consecutive order. If you restore the log backup data of `[t1, t2)`, `[t2, t3)`, and `[t3, t4)` in consecutive order, the restored data is consistent. However, if you restore `[t1, t2)` and then skip `[t2, t3)` to restore `[t3, t4)`, the restored data might be inconsistent.

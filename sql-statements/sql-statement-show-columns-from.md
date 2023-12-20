@@ -3,19 +3,19 @@ title: SHOW [FULL] COLUMNS FROM | TiDB SQL Statement Reference
 summary: An overview of the usage of SHOW [FULL] COLUMNS FROM for the TiDB database.
 ---
 
-# からの [完全な] 列を表示 {#show-full-columns-from}
+# SHOW [FULL] COLUMNS FROM {#show-full-columns-from}
 
-ステートメント`SHOW [FULL] COLUMNS FROM <table_name>`は、テーブルまたはビューの列を便利な表形式で記述します。オプションのキーワード`FULL`その列に対して現在のユーザーが持つ権限を表示し、テーブル定義の`comment`を表示します。
+The statement `SHOW [FULL] COLUMNS FROM <table_name>` describes the columns of a table or view in a useful tabular format. The optional keyword `FULL` displays the privileges the current user has to that column, and the `comment` from the table definition.
 
-ステートメント`SHOW [FULL] FIELDS FROM <table_name>` 、 `DESC <table_name>` 、 `DESCRIBE <table_name>` 、および`EXPLAIN <table_name>` 、このステートメントの別名です。
+The statements `SHOW [FULL] FIELDS FROM <table_name>`, `DESC <table_name>`, `DESCRIBE <table_name>`, and `EXPLAIN <table_name>` are aliases of this statement.
 
-> **ノート：**
+> **Note:**
 >
-> `DESC TABLE <table_name>` 、 `DESCRIBE TABLE <table_name>` 、および`EXPLAIN TABLE <table_name>` 、上記のステートメントと同等ではありません。これらは[`DESC SELECT * FROM &#x3C;table_name>`](/sql-statements/sql-statement-explain.md)の別名です。
+> `DESC TABLE <table_name>`, `DESCRIBE TABLE <table_name>`, and `EXPLAIN TABLE <table_name>` are not equivalent to the above statements. They are aliases of [`DESC SELECT * FROM &#x3C;table_name>`](/sql-statements/sql-statement-explain.md).
 
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
-**表示手順:**
+**ShowStmt:**
 
 ![ShowStmt](/media/sqlgram/ShowStmt.png)
 
@@ -23,11 +23,11 @@ summary: An overview of the usage of SHOW [FULL] COLUMNS FROM for the TiDB datab
 
 ![ShowColumnsFilterable](/media/sqlgram/ShowColumnsFilterable.png)
 
-**オプトフル:**
+**OptFull:**
 
 ![OptFull](/media/sqlgram/OptFull.png)
 
-**フィールドまたは列:**
+**FieldsOrColumns:**
 
 ![FieldsOrColumns](/media/sqlgram/FieldsOrColumns.png)
 
@@ -35,11 +35,11 @@ summary: An overview of the usage of SHOW [FULL] COLUMNS FROM for the TiDB datab
 
 ![ShowTableAliasOpt](/media/sqlgram/ShowTableAliasOpt.png)
 
-**送信者または受信者:**
+**FromOrIn:**
 
 ![FromOrIn](/media/sqlgram/FromOrIn.png)
 
-**テーブル名:**
+**TableName:**
 
 ![TableName](/media/sqlgram/TableName.png)
 
@@ -47,7 +47,7 @@ summary: An overview of the usage of SHOW [FULL] COLUMNS FROM for the TiDB datab
 
 ![ShowDatabaseNameOpt](/media/sqlgram/ShowDatabaseNameOpt.png)
 
-**DB名:**
+**DBName:**
 
 ![DBName](/media/sqlgram/DBName.png)
 
@@ -55,7 +55,7 @@ summary: An overview of the usage of SHOW [FULL] COLUMNS FROM for the TiDB datab
 
 ![ShowLikeOrWhereOpt](/media/sqlgram/ShowLikeOrWhereOpt.png)
 
-## 例 {#examples}
+## Examples {#examples}
 
 ```sql
 mysql> create view v1 as select 1;
@@ -155,10 +155,10 @@ mysql> show full columns from mysql.user;
 38 rows in set (0.00 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-TiDB の`SHOW [FULL] COLUMNS FROM`ステートメントは MySQL と完全な互換性があります。互換性の違いを見つけた場合は、 [GitHub の問題](https://github.com/pingcap/tidb/issues/new/choose)を介して報告してください。
+The `SHOW [FULL] COLUMNS FROM` statement in TiDB is fully compatible with MySQL. If you find any compatibility differences, [report a bug](https://docs.pingcap.com/tidb/stable/support).
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [テーブルの作成を表示](/sql-statements/sql-statement-show-create-table.md)
+-   [SHOW CREATE TABLE](/sql-statements/sql-statement-show-create-table.md)

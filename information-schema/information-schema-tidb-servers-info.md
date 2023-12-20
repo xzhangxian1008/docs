@@ -5,14 +5,18 @@ summary: Learn the `TIDB_SERVERS_INFO` INFORMATION_SCHEMA table.
 
 # TIDB_SERVERS_INFO {#tidb-servers-info}
 
-表`TIDB_SERVERS_INFO`は、TiDBクラスタ内の TiDB サーバー (つまり、tidb-server プロセス) に関する情報を提供します。
+The `TIDB_SERVERS_INFO` table provides information about TiDB servers in the TiDB Cluster (namely, tidb-server processes).
+
+> **Note:**
+>
+> This table is not available on [TiDB Serverless](https://docs.pingcap.com/tidbcloud/select-cluster-tier#tidb-serverless) clusters.
 
 ```sql
 USE INFORMATION_SCHEMA;
 DESC tidb_servers_info;
 ```
 
-出力は次のとおりです。
+The output is as follows:
 
 ```sql
 +---------------+--------------+------+------+---------+-------+
@@ -31,13 +35,13 @@ DESC tidb_servers_info;
 9 rows in set (0.00 sec)
 ```
 
-`TIDB_SERVERS_INFO`テーブルをビュー。
+View the `TIDB_SERVERS_INFO` table:
 
 ```sql
 SELECT * FROM TIDB_SERVERS_INFO\G
 ```
 
-出力は次のとおりです。
+The output is as follows:
 
 ```sql
 *************************** 1. row ***************************
@@ -46,7 +50,7 @@ SELECT * FROM TIDB_SERVERS_INFO\G
          PORT: 4000
   STATUS_PORT: 10080
         LEASE: 45s
-      VERSION: 5.7.25-TiDB-v7.1.1
+      VERSION: 5.7.25-TiDB-v7.1.2
      GIT_HASH: 827d8ff2d22ac4c93ae1b841b79d468211e1d393
 BINLOG_STATUS: Off
        LABELS:

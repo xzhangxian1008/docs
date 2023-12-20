@@ -3,11 +3,15 @@ title: DROP PLACEMENT POLICY
 summary: The usage of ALTER PLACEMENT POLICY in TiDB.
 ---
 
-# ドロップ配置ポリシー {#drop-placement-policy}
+# DROP PLACEMENT POLICY {#drop-placement-policy}
 
-`DROP PLACEMENT POLICY`は、以前に作成された配置ポリシーを削除するために使用されます。
+`DROP PLACEMENT POLICY` is used to drop a previously created placement policy.
 
-## あらすじ {#synopsis}
+> **Note:**
+>
+> This feature is not available on [TiDB Serverless](https://docs.pingcap.com/tidbcloud/select-cluster-tier#tidb-serverless) clusters.
+
+## Synopsis {#synopsis}
 
 ```ebnf+diagram
 DropPolicyStmt ::=
@@ -17,11 +21,9 @@ PolicyName ::=
     Identifier
 ```
 
-## 例 {#examples}
+## Examples {#examples}
 
-配置ポリシーは、テーブルまたはパーティションによって参照されていない場合にのみ削除できます。
-
-{{< copyable "" >}}
+Placement policies can only be dropped when they are not referenced by any tables or partitions.
 
 ```sql
 CREATE PLACEMENT POLICY p1 FOLLOWERS=4;
@@ -57,13 +59,13 @@ Query OK, 0 rows affected (0.08 sec)
 Query OK, 0 rows affected (0.21 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-このステートメントは、MySQL 構文に対する TiDB 拡張機能です。
+This statement is a TiDB extension to MySQL syntax.
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [SQL の配置ルール](/placement-rules-in-sql.md)
--   [配置を表示](/sql-statements/sql-statement-show-placement.md)
--   [配置ポリシーの作成](/sql-statements/sql-statement-create-placement-policy.md)
--   [配置ポリシーの変更](/sql-statements/sql-statement-alter-placement-policy.md)
+-   [Placement Rules in SQL](/placement-rules-in-sql.md)
+-   [SHOW PLACEMENT](/sql-statements/sql-statement-show-placement.md)
+-   [CREATE PLACEMENT POLICY](/sql-statements/sql-statement-create-placement-policy.md)
+-   [ALTER PLACEMENT POLICY](/sql-statements/sql-statement-alter-placement-policy.md)

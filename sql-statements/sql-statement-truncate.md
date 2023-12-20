@@ -3,27 +3,27 @@ title: TRUNCATE | TiDB SQL Statement Reference
 summary: An overview of the usage of TRUNCATE for the TiDB database.
 ---
 
-# 切り詰める {#truncate}
+# TRUNCATE {#truncate}
 
-`TRUNCATE`ステートメントは、非トランザクション的な方法でテーブルからすべてのデータを削除します。 `TRUNCATE`前の定義の`DROP TABLE` + `CREATE TABLE`と意味的に同じと考えることができます。
+The `TRUNCATE` statement removes all data from the table in a non-transactional way. `TRUNCATE` can be thought of as semantically the same as `DROP TABLE` + `CREATE TABLE` with the previous definition.
 
-`TRUNCATE TABLE tableName`と`TRUNCATE tableName`はどちらも有効な構文です。
+Both `TRUNCATE TABLE tableName` and `TRUNCATE tableName` are valid syntax.
 
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
 **TruncateTableStmt:**
 
 ![TruncateTableStmt](/media/sqlgram/TruncateTableStmt.png)
 
-**オプトテーブル:**
+**OptTable:**
 
 ![OptTable](/media/sqlgram/OptTable.png)
 
-**テーブル名:**
+**TableName:**
 
 ![TableName](/media/sqlgram/TableName.png)
 
-## 例 {#examples}
+## Examples {#examples}
 
 ```sql
 mysql> CREATE TABLE t1 (a INT NOT NULL PRIMARY KEY);
@@ -59,13 +59,13 @@ mysql> TRUNCATE TABLE t1;
 Query OK, 0 rows affected (0.11 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-TiDB の`TRUNCATE`ステートメントは MySQL と完全な互換性があります。互換性の違いを見つけた場合は、 [GitHub の問題](https://github.com/pingcap/tidb/issues/new/choose)を介して報告してください。
+The `TRUNCATE` statement in TiDB is fully compatible with MySQL. If you find any compatibility differences, [report a bug](https://docs.pingcap.com/tidb/stable/support).
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [ドロップテーブル](/sql-statements/sql-statement-drop-table.md)
--   [消去](/sql-statements/sql-statement-delete.md)
--   [テーブルの作成](/sql-statements/sql-statement-create-table.md)
--   [テーブルの作成を表示](/sql-statements/sql-statement-show-create-table.md)
+-   [DROP TABLE](/sql-statements/sql-statement-drop-table.md)
+-   [DELETE](/sql-statements/sql-statement-delete.md)
+-   [CREATE TABLE](/sql-statements/sql-statement-create-table.md)
+-   [SHOW CREATE TABLE](/sql-statements/sql-statement-show-create-table.md)

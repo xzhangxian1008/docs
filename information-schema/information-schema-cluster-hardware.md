@@ -3,11 +3,13 @@ title: CLUSTER_HARDWARE
 summary: Learn the `CLUSTER_HARDWARE` information_schema table.
 ---
 
-# クラスター_ハードウェア {#cluster-hardware}
+# CLUSTER_HARDWARE {#cluster-hardware}
 
-`CLUSTER_HARDWARE`ハードウェア システム テーブルは、クラスターの各インスタンスが配置されているサーバーのハードウェア情報を提供します。
+The `CLUSTER_HARDWARE` hardware system table provides the hardware information of the server where each instance of the cluster is located.
 
-{{< copyable "" >}}
+> **Note:**
+>
+> This table is only applicable to TiDB Self-Hosted and not available on [TiDB Cloud](https://docs.pingcap.com/tidbcloud/).
 
 ```sql
 USE information_schema;
@@ -28,22 +30,20 @@ DESC cluster_hardware;
 6 rows in set (0.00 sec)
 ```
 
-フィールドの説明:
+Field description:
 
--   `TYPE` : [`information_schema.cluster_info`](/information-schema/information-schema-cluster-info.md)テーブルの`TYPE`フィールドに対応します。オプションの値は`tidb` 、 `pd` 、および`tikv`です。
--   `INSTANCE` : [`information_schema.cluster_info`](/information-schema/information-schema-cluster-info.md)クラスタ情報テーブルの`INSTANCE`フィールドに対応します。
--   `DEVICE_TYPE` : ハードウェアの種類。現在、 `cpu` 、 `memory` 、 `disk` 、および`net`タイプをクエリできます。
--   `DEVICE_NAME` : ハードウェア名。 `DEVICE_NAME`の値は`DEVICE_TYPE`によって変化します。
-    -   `cpu` : ハードウェア名は cpu です。
-    -   `memory` : ハードウェア名はメモリです。
-    -   `disk` : ディスク名。
-    -   `net` : ネットワークカード名。
--   `NAME` : ハードウェアの各種情報名。たとえば、cpu には`cpu-logical-cores`と`cpu-physical-cores`という 2 つの情報名があり、それぞれ論理コア番号と物理コア番号を意味します。
--   `VALUE` : ディスクボリュームやCPUコア番号など、対応するハードウェア情報の値。
+-   `TYPE`: Corresponds to the `TYPE` field in the [`information_schema.cluster_info`](/information-schema/information-schema-cluster-info.md) table. The optional values are `tidb`, `pd`, and `tikv`.
+-   `INSTANCE`: Corresponds to the `INSTANCE` field in the [`information_schema.cluster_info`](/information-schema/information-schema-cluster-info.md) cluster information table.
+-   `DEVICE_TYPE`: Hardware type. Currently, you can query the `cpu`, `memory`, `disk`, and `net` types.
+-   `DEVICE_NAME`: Hardware name. The value of `DEVICE_NAME` varies with `DEVICE_TYPE`.
+    -   `cpu`: The hardware name is cpu.
+    -   `memory`: The hardware name is memory.
+    -   `disk`: The disk name.
+    -   `net`: The network card name.
+-   `NAME`: The different information names of the hardware. For example, cpu has two information names: `cpu-logical-cores` and `cpu-physical-cores`, which respectively mean logical core numbers and physical core numbers.
+-   `VALUE`: The value of the corresponding hardware information, such as the disk volume and CPU core numbers.
 
-次の例は、 `CLUSTER_HARDWARE`テーブルを使用して CPU 情報をクエリする方法を示しています。
-
-{{< copyable "" >}}
+The following example shows how to query the CPU information using the `CLUSTER_HARDWARE` table:
 
 ```sql
 SELECT * FROM cluster_hardware WHERE device_type='cpu' AND device_name='cpu' AND name LIKE '%cores';

@@ -1,256 +1,311 @@
 ---
-title: Build a Simple CRUD App with TiDB and peewee
-summary: Learn how to build a simple CRUD application with TiDB and peewee.
+title: Connect to TiDB with peewee
+summary: Learn how to connect to TiDB using peewee. This tutorial gives Python sample code snippets that work with TiDB using peewee.
 ---
 
-<!-- markdownlint-disable MD024 -->
+# Connect to TiDB with peewee {#connect-to-tidb-with-peewee}
 
-<!-- markdownlint-disable MD029 -->
+TiDB is a MySQL-compatible database, and [peewee](https://docs.peewee-orm.com/) is a popular Object Relational Mapper (ORM) for Python.
 
-# TiDB と peewee を使用してシンプルな CRUD アプリを構築する {#build-a-simple-crud-app-with-tidb-and-peewee}
+In this tutorial, you can learn how to use TiDB and peewee to accomplish the following tasks:
 
-[ピーピー](http://docs.peewee-orm.com/en/latest/)は、Python 用の人気のあるオープンソース ORM ライブラリです。
+-   Set up your environment.
+-   Connect to your TiDB cluster using peewee.
+-   Build and run your application. Optionally, you can find sample code snippets for basic CRUD operations.
 
-このドキュメントでは、TiDB と peewee を使用して単純な CRUD アプリケーションを構築する方法について説明します。
-
-> **注記：**
+> **Note:**
 >
-> Python 3.10 以降の Python バージョンを使用することをお勧めします。
+> This tutorial works with TiDB Serverless, TiDB Dedicated, and TiDB Self-Hosted clusters.
 
-## ステップ 1. TiDB クラスターを起動する {#step-1-launch-your-tidb-cluster}
+## Prerequisites {#prerequisites}
+
+To complete this tutorial, you need:
+
+-   [Python 3.8 or higher](https://www.python.org/downloads/).
+-   [Git](https://git-scm.com/downloads).
+-   A TiDB cluster.
 
 <CustomContent platform="tidb">
 
-TiDB クラスターの起動方法を紹介します。
+**If you don't have a TiDB cluster, you can create one as follows:**
 
-**TiDB サーバーレス クラスターを使用する**
-
-詳細な手順については、 [TiDB サーバーレスクラスターを作成する](/develop/dev-guide-build-cluster-in-cloud.md#step-1-create-a-tidb-serverless-cluster)を参照してください。
-
-**ローカルクラスターを使用する**
-
-詳細な手順については、 [ローカルテストクラスターをデプロイ](/quick-start-with-tidb.md#deploy-a-local-test-cluster)または[TiUPを使用して TiDB クラスターをデプロイ](/production-deployment-using-tiup.md)を参照してください。
+-   (Recommended) Follow [Creating a TiDB Serverless cluster](/develop/dev-guide-build-cluster-in-cloud.md) to create your own TiDB Cloud cluster.
+-   Follow [Deploy a local test TiDB cluster](/quick-start-with-tidb.md#deploy-a-local-test-cluster) or [Deploy a production TiDB cluster](/production-deployment-using-tiup.md) to create a local cluster.
 
 </CustomContent>
-
 <CustomContent platform="tidb-cloud">
 
-[TiDB サーバーレスクラスターを作成する](/develop/dev-guide-build-cluster-in-cloud.md#step-1-create-a-tidb-serverless-cluster)を参照してください。
+**If you don't have a TiDB cluster, you can create one as follows:**
+
+-   (Recommended) Follow [Creating a TiDB Serverless cluster](/develop/dev-guide-build-cluster-in-cloud.md) to create your own TiDB Cloud cluster.
+-   Follow [Deploy a local test TiDB cluster](https://docs.pingcap.com/tidb/stable/quick-start-with-tidb#deploy-a-local-test-cluster) or [Deploy a production TiDB cluster](https://docs.pingcap.com/tidb/stable/production-deployment-using-tiup) to create a local cluster.
 
 </CustomContent>
 
-## ステップ 2. コードを取得する {#step-2-get-the-code}
+## Run the sample app to connect to TiDB {#run-the-sample-app-to-connect-to-tidb}
+
+This section demonstrates how to run the sample application code and connect to TiDB.
+
+### Step 1: Clone the sample app repository {#step-1-clone-the-sample-app-repository}
+
+Run the following commands in your terminal window to clone the sample code repository:
 
 ```shell
-git clone https://github.com/pingcap-inc/tidb-example-python.git
+git clone https://github.com/tidb-samples/tidb-python-peewee-quickstart.git
+cd tidb-python-peewee-quickstart
 ```
 
-以下では例として peewee 3.15.4 を使用します。
+### Step 2: Install dependencies {#step-2-install-dependencies}
 
-```python
-import os
-import uuid
-from typing import List
-
-from peewee import *
-
-from playhouse.db_url import connect
-
-db = connect('mysql://root:@127.0.0.1:4000/test')
-
-
-class Player(Model):
-    id = CharField(max_length=36, primary_key=True)
-    coins = IntegerField()
-    goods = IntegerField()
-
-    class Meta:
-        database = db
-        table_name = "player"
-
-
-def random_player(amount: int) -> List[Player]:
-    players = []
-    for _ in range(amount):
-        players.append(Player(id=uuid.uuid4(), coins=10000, goods=10000))
-
-    return players
-
-
-def simple_example() -> None:
-    # create a player, who has a coin and a goods.
-    Player.create(id="test", coins=1, goods=1)
-
-    # get this player, and print it.
-    test_player = Player.select().where(Player.id == "test").get()
-    print(f'id:{test_player.id}, coins:{test_player.coins}, goods:{test_player.goods}')
-
-    # create players with bulk inserts.
-    # insert 1919 players totally, with 114 players per batch.
-    # each player has a random UUID
-    player_list = random_player(1919)
-    Player.bulk_create(player_list, 114)
-
-    # print the number of players
-    count = Player.select().count()
-    print(f'number of players: {count}')
-    
-    # print 3 players.
-    three_players = Player.select().limit(3)
-    for player in three_players:
-        print(f'id:{player.id}, coins:{player.coins}, goods:{player.goods}')
-
-
-def trade_check(sell_id: str, buy_id: str, amount: int, price: int) -> bool:
-    sell_goods = Player.select(Player.goods).where(Player.id == sell_id).get().goods
-    if sell_goods < amount:
-        print(f'sell player {sell_id} goods not enough')
-        return False
-
-    buy_coins = Player.select(Player.coins).where(Player.id == buy_id).get().coins
-    if buy_coins < price:
-        print(f'buy player {buy_id} coins not enough')
-        return False
-
-    return True
-
-
-def trade(sell_id: str, buy_id: str, amount: int, price: int) -> None:
-    with db.atomic() as txn:
-        try:
-            if trade_check(sell_id, buy_id, amount, price) is False:
-                txn.rollback()
-                return
-
-            # deduct the goods of seller, and raise his/her the coins
-            Player.update(goods=Player.goods - amount, coins=Player.coins + price).where(Player.id == sell_id).execute()
-            # deduct the coins of buyer, and raise his/her the goods
-            Player.update(goods=Player.goods + amount, coins=Player.coins - price).where(Player.id == buy_id).execute()
-
-        except Exception as err:
-            txn.rollback()
-            print(f'something went wrong: {err}')
-        else:
-            txn.commit()
-            print("trade success")
-
-
-def trade_example() -> None:
-    # create two players
-    # player 1: id is "1", has only 100 coins.
-    # player 2: id is "2", has 114514 coins, and 20 goods.
-    Player.create(id="1", coins=100, goods=0)
-    Player.create(id="2", coins=114514, goods=20)
-
-    # player 1 wants to buy 10 goods from player 2.
-    # it will cost 500 coins, but player 1 cannot afford it.
-    # so this trade will fail, and nobody will lose their coins or goods
-    trade(sell_id="2", buy_id="1", amount=10, price=500)
-
-    # then player 1 has to reduce the incoming quantity to 2.
-    # this trade will be successful
-    trade(sell_id="2", buy_id="1", amount=2, price=100)
-
-    # let's take a look for player 1 and player 2 currently
-    after_trade_players = Player.select().where(Player.id.in_(["1", "2"]))
-    for player in after_trade_players:
-        print(f'id:{player.id}, coins:{player.coins}, goods:{player.goods}')
-
-
-db.connect()
-
-# recreate the player table
-db.drop_tables([Player])
-db.create_tables([Player])
-
-simple_example()
-trade_example()
-```
-
-ドライバーを直接使用する場合と比較して、peewee は、データベース接続を作成するときに、さまざまなデータベースの特定の詳細を抽象化します。さらに、peewee はセッション管理や基本オブジェクトの CRUD などの一部の操作をカプセル化するため、コードが大幅に簡素化されます。
-
-`Player`のクラスは、アプリケーション内のテーブルの属性へのマッピングです。 `Player`の各属性は、 `player`テーブルのフィールドに対応します。 peeweee に詳細情報を提供するために、属性は`id = CharField(max_length=36, primary_key=True)`として定義され、フィールド タイプとその追加属性を示します。たとえば、 `id = CharField(max_length=36, primary_key=True)` 、 `id`属性が`String`タイプ、データベース内の対応するフィールドが`VARCHAR`タイプ、長さが`36`で、主キーであることを示します。
-
-peeweee の使用方法の詳細については、 [ピーウィーのドキュメント](http://docs.peewee-orm.com/en/latest/)を参照してください。
-
-## ステップ 3. コードを実行する {#step-3-run-the-code}
-
-次のコンテンツでは、コードを実行する方法をステップごとに紹介します。
-
-### ステップ 3.1 テーブルの初期化 {#step-3-1-initialize-table}
-
-コードを実行する前に、テーブルを手動で初期化する必要があります。ローカル TiDB クラスターを使用している場合は、次のコマンドを実行できます。
-
-<SimpleTab groupId="cli">
-
-<div label="MySQL CLI" value="mysql-client">
+Run the following command to install the required packages (including peewee and PyMySQL) for the sample app:
 
 ```shell
-mysql --host 127.0.0.1 --port 4000 -u root < player_init.sql
+pip install -r requirements.txt
 ```
+
+#### Why use PyMySQL? {#why-use-pymysql}
+
+Peewee is an ORM library that works with multiple databases. It provides a high-level abstraction of the database, which helps developers write SQL statements in a more object-oriented way. However, peewee does not include a database driver. To connect to a database, you need to install a database driver. This sample application uses PyMySQL as the database driver, which is a pure Python MySQL client library that is compatible with TiDB and can be installed on all platforms. For more information, refer to [peewee official documentation](https://docs.peewee-orm.com/en/latest/peewee/database.html?highlight=mysql#using-mysql).
+
+### Step 3: Configure connection information {#step-3-configure-connection-information}
+
+Connect to your TiDB cluster depending on the TiDB deployment option you've selected.
+
+<SimpleTab>
+<div label="TiDB Serverless">
+
+1.  Navigate to the [**Clusters**](https://tidbcloud.com/console/clusters) page, and then click the name of your target cluster to go to its overview page.
+
+2.  Click **Connect** in the upper-right corner. A connection dialog is displayed.
+
+3.  Ensure the configurations in the connection dialog match your operating environment.
+
+    -   **Endpoint Type** is set to `Public`
+
+    -   **Branch** is set to `main`
+
+    -   **Connect With** is set to `General`
+
+    -   **Operating System** matches your environment.
+
+    > **Tip:**
+    >
+    > If your program is running in Windows Subsystem for Linux (WSL), switch to the corresponding Linux distribution.
+
+4.  Click **Generate Password** to create a random password.
+
+    > **Tip:**
+    >
+    > If you have created a password before, you can either use the original password or click **Reset Password** to generate a new one.
+
+5.  Run the following command to copy `.env.example` and rename it to `.env`:
+
+    ```shell
+    cp .env.example .env
+    ```
+
+6.  Copy and paste the corresponding connection string into the `.env` file. The example result is as follows:
+
+    ```dotenv
+    TIDB_HOST='{host}'  # e.g. gateway01.ap-northeast-1.prod.aws.tidbcloud.com
+    TIDB_PORT='4000'
+    TIDB_USER='{user}'  # e.g. xxxxxx.root
+    TIDB_PASSWORD='{password}'
+    TIDB_DB_NAME='test'
+    CA_PATH='{ssl_ca}'  # e.g. /etc/ssl/certs/ca-certificates.crt (Debian / Ubuntu / Arch)
+    ```
+
+    Be sure to replace the placeholders `{}` with the connection parameters obtained from the connection dialog.
+
+7.  Save the `.env` file.
 
 </div>
+<div label="TiDB Dedicated">
 
-<div label="MyCLI" value="mycli">
+1.  Navigate to the [**Clusters**](https://tidbcloud.com/console/clusters) page, and then click the name of your target cluster to go to its overview page.
 
-```shell
-mycli --host 127.0.0.1 --port 4000 -u root --no-warn < player_init.sql
-```
+2.  Click **Connect** in the upper-right corner. A connection dialog is displayed.
+
+3.  Click **Allow Access from Anywhere** and then click **Download TiDB cluster CA** to download the CA certificate.
+
+    For more details about how to obtain the connection string, refer to [TiDB Dedicated standard connection](https://docs.pingcap.com/tidbcloud/connect-via-standard-connection).
+
+4.  Run the following command to copy `.env.example` and rename it to `.env`:
+
+    ```shell
+    cp .env.example .env
+    ```
+
+5.  Copy and paste the corresponding connection string into the `.env` file. The example result is as follows:
+
+    ```dotenv
+    TIDB_HOST='{host}'  # e.g. tidb.xxxx.clusters.tidb-cloud.com
+    TIDB_PORT='4000'
+    TIDB_USER='{user}'  # e.g. root
+    TIDB_PASSWORD='{password}'
+    TIDB_DB_NAME='test'
+    CA_PATH='{your-downloaded-ca-path}'
+    ```
+
+    Be sure to replace the placeholders `{}` with the connection parameters obtained from the connection dialog, and configure `CA_PATH` with the certificate path downloaded in the previous step.
+
+6.  Save the `.env` file.
 
 </div>
+<div label="TiDB Self-Hosted">
 
+1.  Run the following command to copy `.env.example` and rename it to `.env`:
+
+    ```shell
+    cp .env.example .env
+    ```
+
+2.  Copy and paste the corresponding connection string into the `.env` file. The example result is as follows:
+
+    ```dotenv
+    TIDB_HOST='{tidb_server_host}'
+    TIDB_PORT='4000'
+    TIDB_USER='root'
+    TIDB_PASSWORD='{password}'
+    TIDB_DB_NAME='test'
+    ```
+
+    Be sure to replace the placeholders `{}` with the connection parameters, and remove the `CA_PATH` line. If you are running TiDB locally, the default host address is `127.0.0.1`, and the password is empty.
+
+3.  Save the `.env` file.
+
+</div>
 </SimpleTab>
 
-ローカル クラスターを使用していない場合、または MySQL クライアントをインストールしていない場合は、好みの方法 (Navicat、DBeaver、またはその他の GUI ツールなど) を使用してクラスターに接続し、 `player_init.sql`ファイル内の SQL ステートメントを実行します。
+### Step 4: Run the code and check the result {#step-4-run-the-code-and-check-the-result}
 
-### ステップ 3.2 TiDB Cloudのパラメータを変更する {#step-3-2-modify-parameters-for-tidb-cloud}
+1.  Execute the following command to run the sample code:
 
-TiDB サーバーレス クラスターを使用している場合は、CA ルート パスを指定し、次の例の`<ca_path>`を CA パスに置き換える必要があります。システム上の CA ルート パスを取得するには、 [私のシステム上の CA ルート パスはどこにありますか?](https://docs.pingcap.com/tidbcloud/secure-connections-to-serverless-tier-clusters#where-is-the-ca-root-path-on-my-system)を参照してください。
+    ```shell
+    python peewee_example.py
+    ```
 
-TiDB サーバーレス クラスターを使用している場合は、 `peewee_example.py`の`connect`関数のパラメーターを変更します。
+2.  Check the [Expected-Output.txt](https://github.com/tidb-samples/tidb-python-peewee-quickstart/blob/main/Expected-Output.txt) to see if the output matches.
+
+## Sample code snippets {#sample-code-snippets}
+
+You can refer to the following sample code snippets to complete your own application development.
+
+For complete sample code and how to run it, check out the [tidb-samples/tidb-python-peewee-quickstart](https://github.com/tidb-samples/tidb-python-peewee-quickstart) repository.
+
+### Connect to TiDB {#connect-to-tidb}
 
 ```python
-db = connect('mysql://root:@127.0.0.1:4000/test')
+from peewee import MySQLDatabase
+
+def get_db_engine():
+    config = Config()
+    connect_params = {}
+    if ${ca_path}:
+        connect_params = {
+            "ssl_verify_cert": True,
+            "ssl_verify_identity": True,
+            "ssl_ca": ${ca_path},
+        }
+    return MySQLDatabase(
+        ${tidb_db_name},
+        host=${tidb_host},
+        port=${tidb_port},
+        user=${tidb_user},
+        password=${tidb_password},
+        **connect_params,
+    )
 ```
 
-設定したパスワードが`123456`で、クラスターの詳細ページから取得した接続パラメーターが次であるとします。
+When using this function, you need to replace `${tidb_host}`, `${tidb_port}`, `${tidb_user}`, `${tidb_password}`, `${tidb_db_name}` and `${ca_path}` with the actual values of your TiDB cluster.
 
--   エンドポイント: `xxx.tidbcloud.com`
--   ポート: `4000`
--   ユーザー: `2aEp24QWEDLqRFs.root`
+### Define a table {#define-a-table}
 
-この場合、 `connect`を次のように変更できます。
+```python
+from peewee import Model, CharField, IntegerField
 
--   peewee がドライバーとして PyMySQL を使用する場合:
+db = get_db_engine()
 
-    ```python
-    db = connect('mysql://2aEp24QWEDLqRFs.root:123456@xxx.tidbcloud.com:4000/test', 
-        ssl_verify_cert=True, ssl_ca="<ca_path>")
-    ```
+class BaseModel(Model):
+    class Meta:
+        database = db
 
--   peewee が mysqlclient をドライバーとして使用する場合:
+class Player(BaseModel):
+    name = CharField(max_length=32, unique=True)
+    coins = IntegerField(default=0)
+    goods = IntegerField(default=0)
 
-    ```python
-    db = connect('mysql://2aEp24QWEDLqRFs.root:123456@xxx.tidbcloud.com:4000/test',
-        ssl_mode="VERIFY_IDENTITY", ssl={"ca": "<ca_path>"})
-    ```
-
-peewee はドライバーにパラメーターを渡すため、peewee を使用する場合はドライバーの使用タイプに注意する必要があります。
-
-### ステップ 3.3 コードを実行する {#step-3-3-run-the-code}
-
-コードを実行する前に、次のコマンドを使用して依存関係をインストールします。
-
-```bash
-pip3 install -r requirement.txt
+    class Meta:
+        table_name = "players"
 ```
 
-スクリプトを複数回実行する必要がある場合は、各実行前に[テーブルの初期化](#step-31-initialize-table)セクションに従ってテーブルを再度初期化します。
+For more information, refer to [peewee documentation: Models and Fields](https://docs.peewee-orm.com/en/latest/peewee/models.html).
 
-```bash
-python3 peewee_example.py
+### Insert data {#insert-data}
+
+```python
+# Insert a single record
+Player.create(name="test", coins=100, goods=100)
+
+# Insert multiple records
+Player.insert_many(
+    [
+        {"name": "test1", "coins": 100, "goods": 100},
+        {"name": "test2", "coins": 100, "goods": 100},
+    ]
+).execute()
 ```
 
-## ステップ 4. 期待される出力 {#step-4-expected-output}
+For more information, refer to [Insert data](/develop/dev-guide-insert-data.md).
 
-[期待される出力](https://github.com/pingcap-inc/tidb-example-python/blob/main/Expected-Output.md#peewee)
+### Query data {#query-data}
+
+```python
+# Query all records
+players = Player.select()
+
+# Query a single record
+player = Player.get(Player.name == "test")
+
+# Query multiple records
+players = Player.select().where(Player.coins == 100)
+```
+
+For more information, refer to [Query data](/develop/dev-guide-get-data-from-single-table.md).
+
+### Update data {#update-data}
+
+```python
+# Update a single record
+player = Player.get(Player.name == "test")
+player.coins = 200
+player.save()
+
+# Update multiple records
+Player.update(coins=200).where(Player.coins == 100).execute()
+```
+
+For more information, refer to [Update data](/develop/dev-guide-update-data.md).
+
+### Delete data {#delete-data}
+
+```python
+# Delete a single record
+player = Player.get(Player.name == "test")
+player.delete_instance()
+
+# Delete multiple records
+Player.delete().where(Player.coins == 100).execute()
+```
+
+For more information, refer to [Delete data](/develop/dev-guide-delete-data.md).
+
+## Next steps {#next-steps}
+
+-   Learn more usage of peewee from [the documentation of peewee](https://docs.peewee-orm.com/).
+-   Learn the best practices for TiDB application development with the chapters in the [Developer guide](/develop/dev-guide-overview.md), such as [Insert data](/develop/dev-guide-insert-data.md), [Update data](/develop/dev-guide-update-data.md), [Delete data](/develop/dev-guide-delete-data.md), [Single table reading](/develop/dev-guide-get-data-from-single-table.md), [Transactions](/develop/dev-guide-transaction-overview.md), and [SQL performance optimization](/develop/dev-guide-optimize-sql-overview.md).
+-   Learn through the professional [TiDB developer courses](https://www.pingcap.com/education/) and earn [TiDB certifications](https://www.pingcap.com/education/certification/) after passing the exam.
+
+## Need help? {#need-help}
+
+Ask questions on the [Discord](https://discord.gg/vYU9h56kAX), or [create a support ticket](https://support.pingcap.com/).

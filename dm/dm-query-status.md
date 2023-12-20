@@ -3,27 +3,32 @@ title: Query Task Status in TiDB Data Migration
 summary: Learn how to query the status of a data replication task.
 ---
 
-# TiDB データ移行でのタスク ステータスのクエリ {#query-task-status-in-tidb-data-migration}
+# Query Task Status in TiDB Data Migration {#query-task-status-in-tidb-data-migration}
 
-このドキュメントでは、 `query-status`コマンドを使用してタスクのステータスと DM のサブタスクのステータスを問い合わせる方法を紹介します。
+This document introduces how to use the `query-status` command to query the task status, and the subtask status of DM.
 
-## クエリ結果 {#query-result}
+## Query result {#query-result}
 
-{{< copyable "" >}}
+It is recommended that you use `query-status` by the following steps:
+
+1.  Use `query-status` to check whether each on-going task is in the normal state.
+2.  If any error occurs in a task, use the `query-status <taskName>` command to see detailed error information. `<taskName>` in this command indicates the name of the task that encounters the error.
+
+A successful query result is as follows:
 
 ```bash
 » query-status
 ```
 
-```
+```json
 {
-    "result": true,     # Whether the query is successful.
-    "msg": "",          # Describes the reason for the unsuccessful query.
-    "tasks": [          # Migration task list.
+    "result": true,
+    "msg": "",
+    "tasks": [
         {
-            "taskName": "test",         # The task name.
-            "taskStatus": "Running",    # The status of the task.
-            "sources": [                # The upstream MySQL list.
+            "taskName": "test",
+            "taskStatus": "Running",
+            "sources": [
                 "mysql-replica-01",
                 "mysql-replica-02"
             ]
@@ -40,93 +45,84 @@ summary: Learn how to query the status of a data replication task.
 }
 ```
 
-`tasks`の`taskStatus`の詳しい説明は[タスクのステータス](#task-status)を参照してください。
+Some fields in the query result are described as follows:
 
-次の手順で`query-status`を使用することをお勧めします。
+-   `result`: Whether the query is successful.
+-   `msg`: The error message returned when the query fails.
+-   `tasks`: The list of migration tasks. Each task contains the following fields:
+    -   `taskName`: The name of the task.
+    -   `taskStatus`: The status of the task. For detailed descriptions of `taskStatus`, refer to [Task status](#task-status).
+    -   `sources`: The list of upstream MySQL databases.
 
-1.  実行中の各タスクが通常の状態であるかどうかを確認するには、 `query-status`使用します。
-2.  タスクでエラーが発生した場合は、 `query-status <taskName>`コマンドを使用して詳細なエラー情報を確認します。このコマンドの`<taskName>`エラーが発生したタスクの名前を示します。
+## Task status {#task-status}
 
-## タスクのステータス {#task-status}
+The status of a DM migration task depends on the status of each subtask assigned to DM-worker. For detailed descriptions of subtask status, see [Subtask status](#subtask-status). The table below shows how the subtask status is related to task status.
 
-DM 移行タスクのステータスは、DM ワーカーに割り当てられた各サブタスクのステータスによって異なります。サブタスクのステータスの詳細については、 [サブタスクのステータス](#subtask-status)を参照してください。次の表は、サブタスクのステータスとタスクのステータスの関係を示しています。
+| Subtask status in a task                                                                                                                        | Task status                                    |
+| :---------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------- |
+| One subtask is in the `paused` state and error information is returned.                                                                         | `Error - Some error occurred in subtask`       |
+| One subtask in the Sync phase is in the `Running` state but its Relay processing unit is not running (in the `Error`/`Paused`/`Stopped` state). | `Error - Relay status is Error/Paused/Stopped` |
+| One subtask is in the `Paused` state and no error information is returned.                                                                      | `Paused`                                       |
+| All subtasks are in the `New` state.                                                                                                            | `New`                                          |
+| All subtasks are in the `Finished` state.                                                                                                       | `Finished`                                     |
+| All subtasks are in the `Stopped` state.                                                                                                        | `Stopped`                                      |
+| Other situations                                                                                                                                | `Running`                                      |
 
-| タスク内のサブタスクのステータス                                                                            | タスクのステータス                                      |
-| :------------------------------------------------------------------------------------------ | :--------------------------------------------- |
-| 1 つのサブタスクが`paused`状態にあり、エラー情報が返されます。                                                        | `Error - Some error occurred in subtask`       |
-| 同期フェーズの 1 つのサブタスクは`Running`状態ですが、そのリレー処理ユニットは実行されていません ( `Error` / `Paused` / `Stopped`状態)。 | `Error - Relay status is Error/Paused/Stopped` |
-| 1 つのサブタスクは`Paused`状態にあり、エラー情報は返されません。                                                       | `Paused`                                       |
-| すべてのサブタスクは`New`状態になります。                                                                     | `New`                                          |
-| すべてのサブタスクは`Finished`状態になります。                                                                | `Finished`                                     |
-| すべてのサブタスクは`Stopped`状態になります。                                                                 | `Stopped`                                      |
-| その他の状況                                                                                      | `Running`                                      |
-
-## 詳細なクエリ結果 {#detailed-query-result}
-
-{{< copyable "" >}}
+## Detailed query result {#detailed-query-result}
 
 ```bash
 » query-status test
 ```
 
-```
-» query-status
+```json
 {
-    "result": true,     # Whether the query is successful.
-    "msg": "",          # Describes the cause for the unsuccessful query.
-    "sources": [                            # The upstream MySQL list.
+    "result": true,
+    "msg": "",
+    "sources": [
         {
             "result": true,
             "msg": "",
-            "sourceStatus": {                   # The information of the upstream MySQL databases.
+            "sourceStatus": {
                 "source": "mysql-replica-01",
                 "worker": "worker1",
                 "result": null,
                 "relayStatus": null
             },
-            "subTaskStatus": [              # The information of all subtasks of upstream MySQL databases.
+            "subTaskStatus": [
                 {
-                    "name": "test",         # The name of the subtask.
-                    "stage": "Running",     # The running status of the subtask, including "New", "Running", "Paused", "Stopped", and "Finished".
-                    "unit": "Sync",         # The processing unit of DM, including "Check", "Dump", "Load", and "Sync".
-                    "result": null,         # Displays the error information if a subtask fails.
-                    "unresolvedDDLLockID": "test-`test`.`t_target`",    # The sharding DDL lock ID, used for manually handling the sharding DDL
-                                                                        # lock in the abnormal condition.
-                    "sync": {                   # The replication information of the `Sync` processing unit. This information is about the
-                                                # same component with the current processing unit.
-                        "masterBinlog": "(bin.000001, 3234)",                               # The binlog position in the upstream database.
-                        "masterBinlogGtid": "c0149e17-dff1-11e8-b6a8-0242ac110004:1-14",    # The GTID information in the upstream database.
-                        "syncerBinlog": "(bin.000001, 2525)",                               # The position of the binlog that has been replicated
-                                                                                            # in the `Sync` processing unit.
-                        "syncerBinlogGtid": "",                                             # The binlog position replicated using GTID.
-                        "blockingDDLs": [       # The DDL list that is blocked currently. It is not empty only when all the upstream tables of this
-                                                # DM-worker are in the "synced" status. In this case, it indicates the sharding DDL statements to be executed or that are skipped.
+                    "name": "test",
+                    "stage": "Running",
+                    "unit": "Sync",
+                    "result": null,
+                    "unresolvedDDLLockID": "test-`test`.`t_target`",
+                    "sync": {
+                        "masterBinlog": "(bin.000001, 3234)",
+                        "masterBinlogGtid": "c0149e17-dff1-11e8-b6a8-0242ac110004:1-14",
+                        "syncerBinlog": "(bin.000001, 2525)",
+                        "syncerBinlogGtid": "",
+                        "blockingDDLs": [
                             "USE `test`; ALTER TABLE `test`.`t_target` DROP COLUMN `age`;"
                         ],
-                        "unresolvedGroups": [   # The sharding group that is not resolved.
+                        "unresolvedGroups": [
                             {
-                                "target": "`test`.`t_target`",                  # The downstream database table to be replicated.
+                                "target": "`test`.`t_target`",
                                 "DDLs": [
                                     "USE `test`; ALTER TABLE `test`.`t_target` DROP COLUMN `age`;"
                                 ],
-                                "firstPos": "(bin|000001.000001, 3130)",        # The starting position of the sharding DDL statement.
-                                "synced": [                                     # The upstream sharded table whose executed sharding DDL statement has been read by the `Sync` unit.
+                                "firstPos": "(bin|000001.000001, 3130)",
+                                "synced": [
                                     "`test`.`t2`"
                                     "`test`.`t3`"
                                     "`test`.`t1`"
                                 ],
-                                "unsynced": [                                   # The upstream table that has not executed this sharding DDL
-                                                                                # statement. If any upstream tables have not finished replication,
-                                                                                # `blockingDDLs` is empty.
+                                "unsynced": [
                                 ]
                             }
                         ],
-                        "synced": false         # Whether the incremental replication catches up with the upstream and has the same binlog position as that in the
-                                                # upstream. The save point is not refreshed in real time in the `Sync` background, so `false` of `synced`
-                                                # does not always mean a replication delay exits.
-                        "totalRows": "12",      # The total number of rows that are replicated in this subtask.
-                        "totalRps": "1",        # The number of rows that are replicated in this subtask per second.
-                        "recentRps": "1"        # The number of rows that are replicated in this subtask in the last second.
+                        "synced": false,
+                        "totalRows": "12",
+                        "totalRps": "1",
+                        "recentRps": "1"
                     }
                 }
             ]
@@ -147,11 +143,11 @@ DM 移行タスクのステータスは、DM ワーカーに割り当てられ�
                     "unit": "Load",
                     "result": null,
                     "unresolvedDDLLockID": "",
-                    "load": {                   # The replication information of the `Load` processing unit.
-                        "finishedBytes": "115",          # The number of bytes that have been loaded.
-                        "totalBytes": "452",               # The total number of bytes that need to be loaded.
-                        "progress": "25.44 %",         # The progress of the loading process.
-                        "bps": "2734"                        # The speed of the full loading.
+                    "load": {
+                        "finishedBytes": "115",
+                        "totalBytes": "452",
+                        "progress": "25.44 %",
+                        "bps": "2734"
                     }
                 }
             ]
@@ -169,7 +165,7 @@ DM 移行タスクのステータスは、DM ワーカーに割り当てられ�
                     "name": "test",
                     "stage": "Paused",
                     "unit": "Load",
-                    "result": {                 # The error example.
+                    "result": {
                         "isCanceled": false,
                         "errors": [
                             {
@@ -205,72 +201,109 @@ DM 移行タスクのステータスは、DM ワーカーに割り当てられ�
                     "unit": "Dump",
                     "result": null,
                     "unresolvedDDLLockID": "",
-                    "dump": {                        # The replication information of the `Dump` processing unit.
-                        "totalTables": "10",         # The number of tables to be dumped.
-                        "completedTables": "3",      # The number of tables that have been dumped.
-                        "finishedBytes": "2542",     # The number of bytes that have been dumped.
-                        "finishedRows": "32",        # The number of rows that have been dumped.
-                        "estimateTotalRows": "563",  # The estimated number of rows to be dumped.
-                        "progress": "30.52 %",       # The progress of the dumping process.
-                        "bps": "445"                 # The dumping speed.
+                    "dump": {
+                        "totalTables": "10",
+                        "completedTables": "3",
+                        "finishedBytes": "2542",
+                        "finishedRows": "32",
+                        "estimateTotalRows": "563",
+                        "progress": "30.52 %",
+                        "bps": "445"
                     }
                 }
             ]
         },
     ]
 }
-
 ```
 
-「sources」の「subTaskStatus」の「stage」の状態説明と状態切り替え関係については、 [サブタスクのステータス](#subtask-status)を参照してください。
+Some fields in the returned result are described as follows:
 
-「sources」の「subTaskStatus」の「unresolvedDDLLockID」の操作詳細については、 [シャーディング DDL ロックを手動で処理する](/dm/manually-handling-sharding-ddl-locks.md)を参照してください。
+-   `result`: Whether the query is successful.
+-   `msg`: The error message returned when the query fails.
+-   `sources`: The list of upstream MySQL instances. Each source contains the following fields:
+    -   `result`
+    -   `msg`
+    -   `sourceStatus`: The information of the upstream MySQL databases.
+    -   `subTaskStatus`: The information of all subtasks of upstream MySQL databases. Each subtask might contain the following fields:
+        -   `name`: The name of the subtask.
+        -   `stage`: The status of the subtask. For the status description and status switch relationship of "stage" of "subTaskStatus" of "sources", see the [subtask status](#subtask-status).
+        -   `unit`: The processing unit of DM, including "Check", "Dump", "Load", and "Sync".
+        -   `result`: Displays the error information if a subtask fails.
+        -   `unresolvedDDLLockID`: The sharding DDL lock ID, used for manually handling the sharding DDL lock in the abnormal condition. For operation details of "unresolvedDDLLockID" of "subTaskStatus" of "sources", see [Handle Sharding DDL Locks Manually](/dm/manually-handling-sharding-ddl-locks.md).
+        -   `sync`: The replication information of the `Sync` processing unit. This information is about the same component with the current processing unit.
+            -   `masterBinlog`: The binlog position in the upstream database.
+            -   `masterBinlogGtid`: The GTID information in the upstream database.
+            -   `syncerBinlog`:  The position of the binlog that has been replicated in the `Sync` processing unit.
+            -   `syncerBinlogGtid`: The binlog position replicated using GTID.
+            -   `blockingDDLs`: The DDL list that is blocked currently. It is not empty only when all the upstream tables of this DM-worker are in the "synced" status. In this case, it indicates the sharding DDL statements to be executed or that are skipped.
+            -   `unresolvedGroups`: The sharding group that is not resolved. Each group contains the following fields:
+                -   `target`: The downstream database table to be replicated.
+                -   `DDLs`: A list of DDL statements.
+                -   `firstPos`: The starting position of the sharding DDL statement.
+                -   `synced`: The upstream sharded table whose executed sharding DDL statement has been read by the `Sync` unit.
+                -   `unsynced`: The upstream table that has not executed this sharding DDL statement. If any upstream tables have not finished replication, `blockingDDLs` is empty.
+            -   `synced`: Whether the incremental replication catches up with the upstream and has the same binlog position as that in the upstream. The save point is not refreshed in real time in the `Sync` background, so `false` of `synced` does not always mean a replication delay exits.
+            -   `totalRows`: The total number of rows that are replicated in this subtask.
+            -   `totalRps`: The number of rows that are replicated in this subtask per second.
+            -   `recentRps`: The number of rows that are replicated in this subtask in the last second.
+        -   `load`:  The replication information of the `Load` processing unit.
+            -   `finishedBytes`: The number of bytes that have been loaded.
+            -   `totalBytes`: The total number of bytes that need to be loaded.
+            -   `progress`: The progress of the loading process.
+            -   `bps`: The speed of the full loading.
+        -   `dump`: The replication information of the `Dump` processing unit.
+            -   `totalTables`: The number of tables to be dumped.
+            -   `completedTables`:  The number of tables that have been dumped.
+            -   `finishedBytes`: The number of bytes that have been dumped.
+            -   `finishedRows`: The number of rows that have been dumped.
+            -   `estimateTotalRows`: The estimated number of rows to be dumped.
+            -   `progress`: The progress of the dumping process.
+            -   `bps`: The dumping speed in bytes/second.
 
-## サブタスクのステータス {#subtask-status}
+## Subtask status {#subtask-status}
 
-### ステータスの説明 {#status-description}
+### Status description {#status-description}
 
--   `New` :
+-   `New`:
 
-    -   初期状態。
-    -   サブタスクでエラーが発生しない場合は、 `Running`に切り替えられます。それ以外の場合は`Paused`に切り替えられます。
+    -   The initial status.
+    -   If the subtask does not encounter an error, it is switched to `Running`; otherwise it is switched to `Paused`.
 
--   `Running` : 通常の動作状態。
+-   `Running`: The normal running status.
 
--   `Paused` :
+-   `Paused`:
 
-    -   一時停止状態。
-    -   サブタスクでエラーが発生した場合、サブタスクは`Paused`に切り替わります。
-    -   サブタスクが`Running`ステータスにあるときに`pause-task`を実行すると、タスクは`Paused`に切り替わります。
-    -   サブタスクがこのステータスの場合、 `resume-task`コマンドを実行してタスクを再開できます。
+    -   The paused status.
+    -   If the subtask encounters an error, it is switched to `Paused`.
+    -   If you run `pause-task` when the subtask is in the `Running` status, the task is switched to `Paused`.
+    -   When the subtask is in this status, you can run the `resume-task` command to resume the task.
 
--   `Stopped` :
+-   `Stopped`:
 
-    -   停止状態。
-    -   サブタスクが`Running`または`Paused`ステータスにあるときに`stop-task`実行すると、タスクは`Stopped`に切り替わります。
-    -   サブタスクがこのステータスの場合、 `resume-task`を使用してタスクを再開することはできません。
+    -   The stopped status.
+    -   If you run `stop-task` when the subtask is in the `Running` or `Paused` status, the task is switched to `Stopped`.
+    -   When the subtask is in this status, you cannot use `resume-task` to resume the task.
 
--   `Finished` :
+-   `Finished`:
 
-    -   完了したサブタスクのステータス。
-    -   フルレプリケーションサブタスクが正常に終了した場合のみ、この状態に切り替わります。
+    -   The finished subtask status.
+    -   Only when the full replication subtask is finished normally, the task is switched to this status.
 
-### ステータススイッチ図 {#status-switch-diagram}
+### Status switch diagram {#status-switch-diagram}
 
-```
-                                         error occurs
-                            New --------------------------------|
-                             |                                  |
-                             |           resume-task            |
-                             |  |----------------------------|  |
-                             |  |                            |  |
-                             |  |                            |  |
-                             v  v        error occurs        |  v
-  Finished <-------------- Running -----------------------> Paused
-                             ^  |        or pause-task       |
-                             |  |                            |
-                  start task |  | stop task                  |
-                             |  |                            |
-                             |  v        stop task           |
-                           Stopped <-------------------------|
-```
+                                             error occurs
+                                New --------------------------------|
+                                 |                                  |
+                                 |           resume-task            |
+                                 |  |----------------------------|  |
+                                 |  |                            |  |
+                                 |  |                            |  |
+                                 v  v        error occurs        |  v
+      Finished <-------------- Running -----------------------> Paused
+                                 ^  |        or pause-task       |
+                                 |  |                            |
+                      start task |  | stop task                  |
+                                 |  |                            |
+                                 |  v        stop task           |
+                               Stopped <-------------------------|

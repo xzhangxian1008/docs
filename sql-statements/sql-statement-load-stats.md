@@ -3,39 +3,39 @@ title: LOAD STATS
 summary: An overview of the usage of LOAD STATS for the TiDB database.
 ---
 
-# 負荷統計 {#load-stats}
+# LOAD STATS {#load-stats}
 
-`LOAD STATS`ステートメントは、統計を TiDB にロードするために使用されます。
+The `LOAD STATS` statement is used to load the statistics into TiDB.
 
-## あらすじ {#synopsis}
+> **Note:**
+>
+> This feature is not available on [TiDB Serverless](https://docs.pingcap.com/tidbcloud/select-cluster-tier#tidb-serverless) clusters.
+
+## Synopsis {#synopsis}
 
 ```ebnf+diagram
 LoadStatsStmt ::=
     'LOAD' 'STATS' stringLit
 ```
 
-## 例 {#examples}
+## Examples {#examples}
 
-アドレス`http://${tidb-server-ip}:${tidb-server-status-port}/stats/dump/${db_name}/${table_name}`にアクセスして、TiDB インスタンスの統計をダウンロードできます。
+You can access the address `http://${tidb-server-ip}:${tidb-server-status-port}/stats/dump/${db_name}/${table_name}` to download the TiDB instance's statistics.
 
-`LOAD STATS ${stats_path}`を使用して特定の統計ファイルをロードすることもできます。
+You can also use `LOAD STATS ${stats_path}` to load the specific statistics file.
 
-`${stats_path}`絶対パスまたは相対パスにすることができます。相対パスを使用する場合は、 `tidb-server`で始まるパスから該当するファイルが検索されます。以下に例を示します。
-
-{{< copyable "" >}}
+The `${stats_path}` can be an absolute path or a relative path. If you use a relative path, the corresponding file is found starting from the path where `tidb-server` is started. Here is an example:
 
 ```sql
 LOAD STATS '/tmp/stats.json';
 ```
 
-```
-Query OK, 0 rows affected (0.00 sec)
-```
+    Query OK, 0 rows affected (0.00 sec)
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-このステートメントは、MySQL 構文に対する TiDB 拡張機能です。
+This statement is a TiDB extension to MySQL syntax.
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [統計](/statistics.md)
+-   [Statistics](/statistics.md)

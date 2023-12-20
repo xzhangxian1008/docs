@@ -3,44 +3,40 @@ title: Create a Data Migration Task
 summary: Learn how to create a migration task after the DM cluster is deployed.
 ---
 
-# データ移行タスクの作成 {#create-a-data-migration-task}
+# Create a Data Migration Task {#create-a-data-migration-task}
 
-このドキュメントでは、DM クラスターが正常にデプロイされた後に簡単なデータ移行タスクを作成する方法について説明します。
+This document describes how to create a simple data migration task after the DM cluster is successfully deployed.
 
-## サンプルシナリオ {#sample-scenario}
+## Sample scenario {#sample-scenario}
 
-このサンプル シナリオに基づいてデータ移行タスクを作成するとします。
+Suppose that you create a data migration task based on this sample scenario:
 
--   binlogが有効になっている 2 つの MySQL インスタンスと 1 つの TiDB インスタンスをローカルにデプロイ
--   DM クラスターの DM マスターを使用して、クラスターとデータ移行タスクを管理します。
+-   Deploy two MySQL instances with binlog enabled and one TiDB instance locally
+-   Use a DM-master of the DM cluster to manage the cluster and data migration tasks.
 
-各ノードの情報は以下の通りです。
+The information of each node is as follows.
 
-| 実例     | サーバーアドレス  | ポート  |
-| :----- | :-------- | :--- |
-| MySQL1 | 127.0.0.1 | 3306 |
-| MySQL2 | 127.0.0.1 | 3307 |
-| TiDB   | 127.0.0.1 | 4000 |
-| DMマスター | 127.0.0.1 | 8261 |
+| Instance  | Server Address | Port |
+| :-------- | :------------- | :--- |
+| MySQL1    | 127.0.0.1      | 3306 |
+| MySQL2    | 127.0.0.1      | 3307 |
+| TiDB      | 127.0.0.1      | 4000 |
+| DM-master | 127.0.0.1      | 8261 |
 
-このシナリオに基づいて、次のセクションではデータ移行タスクを作成する方法について説明します。
+Based on this scenario, the following sections describe how to create a data migration task.
 
-### アップストリーム MySQL を開始する {#start-upstream-mysql}
+### Start upstream MySQL {#start-upstream-mysql}
 
-実行可能なMySQLインスタンスを2つ用意します。 Docker を使用して MySQL をすばやく起動することもできます。コマンドは次のとおりです。
-
-{{< copyable "" >}}
+Prepare 2 runnable MySQL instances. You can also use Docker to quickly start MySQL. The commands are as follows:
 
 ```bash
 docker run --rm --name mysql-3306 -p 3306:3306 -e MYSQL_ALLOW_EMPTY_PASSWORD=true mysql:5.7.22 --log-bin=mysql-bin --port=3306 --bind-address=0.0.0.0 --binlog-format=ROW --server-id=1 --gtid_mode=ON --enforce-gtid-consistency=true > mysql.3306.log 2>&1 &
 docker run --rm --name mysql-3307 -p 3307:3307 -e MYSQL_ALLOW_EMPTY_PASSWORD=true mysql:5.7.22 --log-bin=mysql-bin --port=3307 --bind-address=0.0.0.0 --binlog-format=ROW --server-id=1 --gtid_mode=ON --enforce-gtid-consistency=true > mysql.3307.log 2>&1 &
 ```
 
-### データの準備 {#prepare-data}
+### Prepare data {#prepare-data}
 
--   サンプル データを mysql-3306 に書き込みます。
-
-    {{< copyable "" >}}
+-   Write example data into mysql-3306:
 
     ```sql
     drop database if exists `sharding1`;
@@ -52,9 +48,7 @@ docker run --rm --name mysql-3307 -p 3307:3307 -e MYSQL_ALLOW_EMPTY_PASSWORD=tru
     insert into t2 (id, uid, name) values (3,20001, 'José Arcadio Buendía'), (4,20002, 'Úrsula Iguarán'), (5,20003, 'José Arcadio');
     ```
 
--   サンプル データを mysql-3307 に書き込みます。
-
-    {{< copyable "" >}}
+-   Write example data into mysql-3307:
 
     ```sql
     drop database if exists `sharding2`;
@@ -66,51 +60,45 @@ docker run --rm --name mysql-3307 -p 3307:3307 -e MYSQL_ALLOW_EMPTY_PASSWORD=tru
     insert into t3 (id, uid, name, info) values (7, 30001, 'Aureliano José', '{}'), (8, 30002, 'Santa Sofía de la Piedad', '{}'), (9, 30003, '17 Aurelianos', NULL);
     ```
 
-### ダウンストリーム TiDB を開始する {#start-downstream-tidb}
+### Start downstream TiDB {#start-downstream-tidb}
 
-TiDBサーバーを実行するには、次のコマンドを使用します。
-
-{{< copyable "" >}}
+To run a TiDB server, use the following command:
 
 ```bash
-wget https://download.pingcap.org/tidb-community-server-v7.1.1-linux-amd64.tar.gz
+wget https://download.pingcap.org/tidb-community-server-v7.1.2-linux-amd64.tar.gz
 tar -xzvf tidb-latest-linux-amd64.tar.gz
 mv tidb-latest-linux-amd64/bin/tidb-server ./
 ./tidb-server
 ```
 
-> **警告：**
+> **Warning:**
 >
-> このドキュメントの TiDB の展開方法は、本番や開発環境には**適用されません**。
+> The deployment method of TiDB in this document **do not apply** to production or development environments.
 
-## MySQL データソースを構成する {#configure-the-mysql-data-source}
+## Configure the MySQL data source {#configure-the-mysql-data-source}
 
-データ移行タスクを開始する前に、MySQL データ ソースを構成する必要があります。
+Before starting a data migration task, you need to configure the MySQL data source.
 
-### パスワードを暗号化する {#encrypt-the-password}
+### Encrypt the password {#encrypt-the-password}
 
-> **ノート：**
+> **Note:**
 >
-> -   データベースにパスワードがない場合は、この手順をスキップできます。
-> -   DM v1.0.6 以降のバージョンでは、平文パスワードを使用してソース情報を設定できます。
+> -   You can skip this step if the database does not have a password.
+> -   You can use the plaintext password to configure the source information in DM v1.0.6 and later versions.
 
-安全上の理由から、暗号化されたパスワードを構成して使用することをお勧めします。 dmctl を使用して MySQL/TiDB パスワードを暗号化できます。パスワードが「123456」であるとします。
-
-{{< copyable "" >}}
+For safety reasons, it is recommended to configure and use encrypted passwords. You can use dmctl to encrypt the MySQL/TiDB password. Suppose the password is "123456":
 
 ```bash
 ./dmctl encrypt "123456"
 ```
 
-```
-fCxfQ9XKCezSzuCD0Wf5dUD+LsKegSg=
-```
+    fCxfQ9XKCezSzuCD0Wf5dUD+LsKegSg=
 
-この暗号化された値を保存し、次の手順で MySQL データ ソースを作成するために使用します。
+Save this encrypted value, and use it for creating a MySQL data source in the following steps.
 
-### ソース構成ファイルを編集する {#edit-the-source-configuration-file}
+### Edit the source configuration file {#edit-the-source-configuration-file}
 
-`conf/source1.yaml`に次の設定を書き込みます。
+Write the following configurations to `conf/source1.yaml`.
 
 ```yaml
 # MySQL1 Configuration.
@@ -127,29 +115,25 @@ from:
   port: 3306
 ```
 
-MySQL2 データ ソースで、上記の構成を`conf/source2.yaml`にコピーします。 `name`を`mysql-replica-02`に変更し、 `password`と`port`を適切な値に変更する必要があります。
+In MySQL2 data source, copy the above configurations to `conf/source2.yaml`. You need to change `name` to `mysql-replica-02` and change `password` and `port` to appropriate values.
 
-### ソースを作成する {#create-a-source}
+### Create a source {#create-a-source}
 
-dmctl を使用して MySQL1 のデータ ソース構成を DM クラスターにロードするには、ターミナルで次のコマンドを実行します。
-
-{{< copyable "" >}}
+To load the data source configurations of MySQL1 into the DM cluster using dmctl, run the following command in the terminal:
 
 ```bash
 ./dmctl --master-addr=127.0.0.1:8261 operate-source create conf/source1.yaml
 ```
 
-MySQL2 の場合は、上記のコマンドの構成ファイルを MySQL2 の構成ファイルに置き換えます。
+For MySQL2, replace the configuration file in the above command with that of MySQL2.
 
-## データ移行タスクを作成する {#create-a-data-migration-task}
+## Create a data migration task {#create-a-data-migration-task}
 
-[用意されたデータ](#prepare-data)をインポートした後、MySQL1 インスタンスと MySQL2 インスタンスの両方にいくつかのシャード テーブルが存在します。これらのテーブルは同一の構造を持ち、テーブル名の接頭辞「t」も同じです。これらのテーブルが配置されているデータベースにはすべて「sharding」という接頭辞が付いています。また、主キーまたは一意キーの間に競合はありません (各シャードテーブルでは、主キーまたは一意キーが他のテーブルのものとは異なります)。
+After importing [prepared data](#prepare-data), there are several sharded tables on both MySQL1 and MySQL2 instances. These tables have identical structure and the same prefix "t" in the table names; the databases where these tables are located are all prefixed with "sharding"; and there is no conflict between the primary keys or the unique keys (in each sharded table, the primary keys or the unique keys are different from those of other tables).
 
-ここで、これらのシャード化されたテーブルを TiDB の`db_target.t_target`テーブルに移行する必要があるとします。手順は以下の通りです。
+Now, suppose that you need to migrate these sharded tables to the `db_target.t_target` table in TiDB. The steps are as follows.
 
-1.  タスクの構成ファイルを作成します。
-
-    {{< copyable "" >}}
+1.  Create the configuration file of the task:
 
     ```yaml
     ---
@@ -192,37 +176,33 @@ MySQL2 の場合は、上記のコマンドの構成ファイルを MySQL2 の�
         target-schema: db_target
     ```
 
-2.  dmctl を使用してタスクを作成するには、上記の設定を`conf/task.yaml`ファイルに書き込みます。
-
-    {{< copyable "" >}}
+2.  To create a task using dmctl, write the above configurations to the `conf/task.yaml` file:
 
     ```bash
     ./dmctl --master-addr 127.0.0.1:8261 start-task conf/task.yaml
     ```
 
-    ```
-    {
-        "result": true,
-        "msg": "",
-        "sources": [
-            {
-                "result": true,
-                "msg": "",
-                "source": "mysql-replica-01",
-                "worker": "worker1"
-            },
-            {
-                "result": true,
-                "msg": "",
-                "source": "mysql-replica-02",
-                "worker": "worker2"
-            }
-        ]
-    }
-    ```
+        {
+            "result": true,
+            "msg": "",
+            "sources": [
+                {
+                    "result": true,
+                    "msg": "",
+                    "source": "mysql-replica-01",
+                    "worker": "worker1"
+                },
+                {
+                    "result": true,
+                    "msg": "",
+                    "source": "mysql-replica-02",
+                    "worker": "worker2"
+                }
+            ]
+        }
 
-これで、シャード テーブルを MySQL1 インスタンスと MySQL2 インスタンスから TiDB に移行するタスクが正常に作成されました。
+Now, you have successfully created a task to migrate the sharded tables from the MySQL1 and MySQL2 instances to TiDB.
 
-## データの検証 {#verify-data}
+## Verify data {#verify-data}
 
-アップストリームの MySQL シャード テーブルのデータを変更できます。次に、 [同期差分インスペクター](/sync-diff-inspector/shard-diff.md)を使用して、上流データと下流データが一致しているかどうかを確認します。データが一貫しているということは、移行タスクが適切に機能していることを意味し、クラスターが適切に機能していることも示します。
+You can modify data in the upstream MySQL sharded tables. Then use [sync-diff-inspector](/sync-diff-inspector/shard-diff.md) to check whether the upstream and downstream data are consistent. Consistent data means that the migration task works well, which also indicates that the cluster works well.

@@ -3,17 +3,19 @@ title: CHANGE PUMP
 summary: An overview of the usage of CHANGE PUMP for the TiDB database.
 ---
 
-# ポンプを交換してください {#change-pump}
+# CHANGE PUMP {#change-pump}
 
-`CHANGE PUMP`ステートメントは、クラスター内のPumpのステータス情報を変更します。
+The `CHANGE PUMP` statement modifies the status information for Pump in the cluster.
 
-> **ヒント：**
+> **Note:**
 >
-> ポンプの状態は運転中に自動的に PD に報告されます。 Pumpが異常な状況にあり、その状態が PD に保存されている状態情報と一致しない場合にのみ、 `CHANGE PUMP`ステートメントを使用して PD に保存されている状態情報を変更できます。
+> This feature is only applicable to TiDB Self-Hosted and not available on [TiDB Cloud](https://docs.pingcap.com/tidbcloud/).
 
-## 例 {#examples}
+> **Tip:**
+>
+> Pump's state is automatically reported to PD while running. Only when Pump is under abnormal circumstances and its state is inconsistent with the state information stored in PD, you can use the `CHANGE PUMP` statement to modify the state information stored in PD.
 
-{{< copyable "" >}}
+## Examples {#examples}
 
 ```sql
 SHOW PUMP STATUS;
@@ -30,9 +32,7 @@ SHOW PUMP STATUS;
 2 rows in set (0.00 sec)
 ```
 
-Pump1 の状態が 1 日以上更新されていないことがわかります。Pumpは異常な状態にありますが、 `State` `Online`のままです。 `CHANGE PUMP`使用した後、ポンプの`State` 「一時停止」に変更されます。
-
-{{< copyable "" >}}
+It can be seen that pump1's state has not been updated for more than a day, the Pump is in an abnormal state, but the `State` remains `Online`. After using `CHANGE PUMP`, the Pump's `State` is changed to 'paused' :
 
 ```sql
 CHANGE PUMP TO NODE_STATE ='paused' FOR NODE_ID 'pump1';
@@ -41,8 +41,6 @@ CHANGE PUMP TO NODE_STATE ='paused' FOR NODE_ID 'pump1';
 ```sql
 Query OK, 0 rows affected (0.01 sec)
 ```
-
-{{< copyable "" >}}
 
 ```sql
 SHOW PUMP STATUS;
@@ -59,12 +57,12 @@ SHOW PUMP STATUS;
 2 rows in set (0.00 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-このステートメントは、MySQL 構文に対する TiDB 拡張機能です。
+This statement is a TiDB extension to MySQL syntax.
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [ポンプのステータスを表示](/sql-statements/sql-statement-show-pump-status.md)
--   [ドレイナーステータスを表示](/sql-statements/sql-statement-show-drainer-status.md)
--   [ドレイナーステータスの変更](/sql-statements/sql-statement-change-drainer.md)
+-   [SHOW PUMP STATUS](/sql-statements/sql-statement-show-pump-status.md)
+-   [SHOW DRAINER STATUS](/sql-statements/sql-statement-show-drainer-status.md)
+-   [CHANGE DRAINER STATUS](/sql-statements/sql-statement-change-drainer.md)

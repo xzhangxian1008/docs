@@ -3,63 +3,63 @@ title: SQL Non-Prepared Execution Plan Cache
 summary: Learn about the principle, usage, and examples of the SQL non-prepared execution plan cache in TiDB.
 ---
 
-# SQL の未準備実行プラン キャッシュ {#sql-non-prepared-execution-plan-cache}
+# SQL Non-Prepared Execution Plan Cache {#sql-non-prepared-execution-plan-cache}
 
-> **警告：**
+> **Warning:**
 >
-> 準備されていない実行プラン キャッシュは実験的機能です。本番環境で使用することはお勧めできません。この機能は予告なく変更または削除される場合があります。バグを見つけた場合は、GitHub で[問題](https://github.com/pingcap/tidb/issues)を報告できます。
+> The non-prepared execution plan cache is an experimental feature. It is not recommended that you use it in the production environment. This feature might be changed or removed without prior notice. If you find a bug, you can report an [issue](https://github.com/pingcap/tidb/issues) on GitHub.
 
-TiDB は、 [ステートメントの`Prepare` / `Execute`](/sql-prepared-plan-cache.md)と同様、一部の非`PREPARE`ステートメントの実行プラン キャッシュをサポートします。この機能により、これらのステートメントは最適化フェーズをスキップし、パフォーマンスを向上させることができます。
+TiDB supports execution plan caching for some non-`PREPARE` statements, similar to the [`Prepare`/`Execute` statements](/sql-prepared-plan-cache.md). This feature allows these statements to skip the optimization phase and improve performance.
 
-## 原理 {#principle}
+## Principle {#principle}
 
-準備されていないプラン キャッシュは、キャッシュを[準備されたプランのキャッシュ](/sql-prepared-plan-cache.md)と共有するセッション レベルの機能です。準備されていないプラン キャッシュの基本原理は次のとおりです。
+The non-prepared plan cache is a session-level feature that shares a cache with the [prepared plan cache](/sql-prepared-plan-cache.md). The basic principle of the non-prepared plan cache is as follows:
 
-1.  未準備プラン キャッシュを有効にすると、TiDB はまず抽象構文ツリー (AST) に基づいてクエリをパラメータ化します。たとえば、 `SELECT * FROM t WHERE b < 10 AND a = 1`は`SELECT * FROM t WHERE b < ? and a = ?`としてパラメータ化されます。
-2.  次に、TiDB はパラメーター化されたクエリを使用してプラン キャッシュを検索します。
-3.  再利用可能なプランが見つかった場合は、それが直接使用され、最適化フェーズはスキップされます。
-4.  それ以外の場合、オプティマイザは新しいプランを生成し、後続のクエリで再利用できるようにそれをキャッシュに再度追加します。
+1.  After you enable the non-prepared plan cache, TiDB first parameterizes the query based on the abstract syntax tree (AST). For example, `SELECT * FROM t WHERE b < 10 AND a = 1` is parameterized as `SELECT * FROM t WHERE b < ? and a = ?`.
+2.  Then, TiDB uses the parameterized query to search the plan cache.
+3.  If a reusable plan is found, it is directly used and the optimization phase is skipped.
+4.  Otherwise, the optimizer generates a new plan and adds it back into the cache for reuse in the subsequent query.
 
-## 使用法 {#usage}
+## Usage {#usage}
 
-準備されていないプラン キャッシュを有効または無効にするには、 [`tidb_enable_non_prepared_plan_cache`](/system-variables.md#tidb_enable_non_prepared_plan_cache)システム変数を設定します。 [`tidb_session_plan_cache_size`](/system-variables.md#tidb_session_plan_cache_size-new-in-v710)システム変数を使用して、準備されていないプラン キャッシュのサイズを制御することもできます。キャッシュされたプランの数が`tidb_session_plan_cache_size`を超えると、TiDB は最も最近使用されていない (LRU) 戦略を使用してプランを削除します。
+To enable or disable the non-prepared plan cache, you can set the [`tidb_enable_non_prepared_plan_cache`](/system-variables.md#tidb_enable_non_prepared_plan_cache) system variable. You can also control the size of the non-prepared plan cache using the [`tidb_session_plan_cache_size`](/system-variables.md#tidb_session_plan_cache_size-new-in-v710) system variable. When the number of cached plans exceeds `tidb_session_plan_cache_size`, TiDB evicts plans using the least recently used (LRU) strategy.
 
-v7.1.0 以降、システム変数[`tidb_plan_cache_max_plan_size`](/system-variables.md#tidb_plan_cache_max_plan_size-new-in-v710)を使用してキャッシュできるプランの最大サイズを制御できます。デフォルト値は 2 MB です。プランのサイズがこの値を超える場合、プランはキャッシュされません。
+Starting from v7.1.0, you can control the maximum size of a plan that can be cached using the system variable [`tidb_plan_cache_max_plan_size`](/system-variables.md#tidb_plan_cache_max_plan_size-new-in-v710). The default value is 2 MB. If the size of a plan exceeds this value, the plan will not be cached.
 
-> **ノート：**
+> **Note:**
 >
-> `tidb_session_plan_cache_size`で指定されたメモリは、準備済みプラン キャッシュと準備されていないプラン キャッシュ間で共有されます。現在のクラスターで準備済みプラン キャッシュを有効にしている場合、準備されていないプラン キャッシュを有効にすると、元の準備済みプラン キャッシュのヒット率が低下する可能性があります。
+> The memory specified by `tidb_session_plan_cache_size` is shared between the prepared and non-prepared plan cache. If you have enabled the prepared plan cache for the current cluster, enabling the non-prepared plan cache might reduce the hit rate of the original prepared plan cache.
 
-## 例 {#example}
+## Example {#example}
 
-次の例は、準備されていないプラン キャッシュの使用方法を示しています。
+The following example shows how to use the non-prepared plan cache:
 
-1.  テスト用にテーブル`t`を作成します。
+1.  Create a table `t` for testing:
 
     ```sql
     CREATE TABLE t (a INT, b INT, KEY(b));
     ```
 
-2.  準備されていないプラン キャッシュを有効にします。
+2.  Enable the non-prepared plan cache:
 
     ```sql
     SET tidb_enable_non_prepared_plan_cache = ON;
     ```
 
-3.  次の 2 つのクエリを実行します。
+3.  Execute the following two queries:
 
     ```sql
     SELECT * FROM t WHERE b < 10 AND a = 1;
     SELECT * FROM t WHERE b < 5 AND a = 2;
     ```
 
-4.  2 番目のクエリがキャッシュにヒットするかどうかを確認します。
+4.  Check whether the second query hits the cache:
 
     ```sql
     SELECT @@last_plan_from_cache;
     ```
 
-    出力の`last_plan_from_cache`の値が`1`の場合、2 番目のクエリの実行プランがキャッシュから取得されたことを意味します。
+    If the value of `last_plan_from_cache` in the output is `1`, it means that the execution plan of the second query comes from the cache:
 
     ```sql
     +------------------------+
@@ -70,64 +70,64 @@ v7.1.0 以降、システム変数[`tidb_plan_cache_max_plan_size`](/system-vari
     1 row in set (0.00 sec)
     ```
 
-## 制限 {#restrictions}
+## Restrictions {#restrictions}
 
-### 次善の計画をキャッシュする {#cache-suboptimal-plans}
+### Cache suboptimal plans {#cache-suboptimal-plans}
 
-TiDB は、パラメーター化されたクエリに対して 1 つのプランのみをキャッシュします。たとえば、クエリ`SELECT * FROM t WHERE a < 1`と`SELECT * FROM t WHERE a < 100000`は同じパラメータ化された形式`SELECT * FROM t WHERE a < ?`を共有するため、同じプランを共有します。
+TiDB only caches one plan for a parameterized query. For example, the queries `SELECT * FROM t WHERE a < 1` and `SELECT * FROM t WHERE a < 100000` share the same parameterized form, `SELECT * FROM t WHERE a < ?`, and thus share the same plan.
 
-これによりパフォーマンスの問題が発生する場合は、 `ignore_plan_cache()`ヒントを使用してキャッシュ内のプランを無視し、オプティマイザーが毎回 SQL の新しい実行プランを生成するようにすることができます。 SQL を変更できない場合は、バインディングを作成して問題を解決できます。たとえば、 `CREATE BINDING FOR SELECT ... USING SELECT /*+ ignore_plan_cache() */ ...` 。
+If this causes performance issues, you can use the `ignore_plan_cache()` hint to ignore plans in the cache, so that the optimizer generates a new execution plan for the SQL every time. If the SQL cannot be modified, you can create a binding to solve the problem. For example, `CREATE BINDING FOR SELECT ... USING SELECT /*+ ignore_plan_cache() */ ...`.
 
-### 使用制限 {#usage-restrictions}
+### Usage restrictions {#usage-restrictions}
 
-前述のリスクと、実行プラン キャッシュは単純なクエリに対してのみ大きな利点を提供するという事実 (クエリが複雑で実行に時間がかかる場合、実行プラン キャッシュの使用はあまり役に立たない可能性があります) により、TiDB には厳しい制限があります。準備されていないプラン キャッシュの範囲について。制限事項は次のとおりです。
+Due to the preceding risks and the fact that the execution plan cache only provides significant benefits for simple queries (if a query is complex and takes a long time to execute, using the execution plan cache might not be very helpful), TiDB has strict restrictions on the scope of non-prepared plan cache. The restrictions are as follows:
 
--   [準備されたプランのキャッシュ](/sql-prepared-plan-cache.md)でサポートされていないクエリまたはプランは、準備されていないプラン キャッシュでもサポートされません。
--   `Window`や`Having`などの複雑な演算子を含むクエリはサポートされていません。
--   3 つ以上の`Join`テーブルまたはサブクエリを含むクエリはサポートされていません。
--   `ORDER BY 1`や`GROUP BY a+1`など、 `ORDER BY`または`GROUP BY`直後に数値または式を含むクエリはサポートされていません。 `ORDER BY column_name`と`GROUP BY column_name`のみがサポートされます。
--   `JSON` 、 `ENUM` 、 `SET` 、または`BIT`タイプの列でフィルター処理するクエリ ( `SELECT * FROM t WHERE json_col = '{}'`など) はサポートされていません。
--   `SELECT * FROM t WHERE a is NULL`など、 `NULL`の値でフィルタリングするクエリはサポートされていません。
--   パラメータ化後のパラメータが 200 を超えるクエリ ( `SELECT * FROM t WHERE a in (1, 2, 3, ... 201)`など) は、デフォルトではサポートされていません。 v7.1.1 以降、 [`tidb_opt_fix_control`](/system-variables.md#tidb_opt_fix_control-new-in-v710)システム変数を使用してこの制限を変更できます。
--   パーティション化されたテーブル、仮想列、一時テーブル、ビュー、またはメモリテーブルにアクセスするクエリ ( `SELECT * FROM INFORMATION_SCHEMA.COLUMNS`など) はサポートされていません。ここで、 `COLUMNS`は TiDBメモリテーブルです。
--   ヒントまたはバインディングを含むクエリはサポートされていません。
--   DML ステートメントまたは`FOR UPDATE`句を含む`SELECT`ステートメントは、デフォルトではサポートされていません。この制限を解除するには、 `SET tidb_enable_non_prepared_plan_cache_for_dml = ON`を実行します。
+-   Queries or plans that are not supported by the [Prepared plan cache](/sql-prepared-plan-cache.md) are also not supported by the non-prepared plan cache.
+-   Queries that contain complex operators such as `Window` or `Having` are not supported.
+-   Queries that contain three or more `Join` tables or subqueries are not supported.
+-   Queries that contain numbers or expressions directly after `ORDER BY` or `GROUP BY` are not supported, such as `ORDER BY 1` and `GROUP BY a+1`. Only `ORDER BY column_name` and `GROUP BY column_name` are supported.
+-   Queries that filter on columns of `JSON`, `ENUM`, `SET`, or `BIT` type are not supported, such as `SELECT * FROM t WHERE json_col = '{}'`.
+-   Queries that filter on `NULL` values are not supported, such as `SELECT * FROM t WHERE a is NULL`.
+-   Queries with more than 200 parameters after parameterization are not supported by default, such as `SELECT * FROM t WHERE a in (1, 2, 3, ... 201)`. Starting from v7.1.1, you can modify this limit using the [`tidb_opt_fix_control`](/system-variables.md#tidb_opt_fix_control-new-in-v710) system variable.
+-   Queries that access partitioned tables, virtual columns, temporary tables, views, or memory tables are not supported, such as `SELECT * FROM INFORMATION_SCHEMA.COLUMNS`, where `COLUMNS` is a TiDB memory table.
+-   Queries with hints or bindings are not supported.
+-   DML statements or `SELECT` statements with the `FOR UPDATE` clause are not supported by default. To remove this restriction, you can execute `SET tidb_enable_non_prepared_plan_cache_for_dml = ON`.
 
-この機能を有効にすると、オプティマイザーはクエリを迅速に評価します。準備されていないプラン キャッシュのサポート条件を満たさない場合、クエリは通常の最適化プロセスに戻ります。
+After you enable this feature, the optimizer quickly evaluates the query. If it does not meet the support conditions for non-prepared plan cache, the query falls back to the regular optimization process.
 
-## パフォーマンス上の利点 {#performance-benefits}
+## Performance benefits {#performance-benefits}
 
-内部テストでは、準備されていないプラン キャッシュ機能を有効にすると、ほとんどの TP シナリオでパフォーマンスが大幅に向上します。ただし、クエリがサポートされているかどうかの判断やクエリのパラメータ化など、追加のパフォーマンス オーバーヘッドも発生します。この機能がワークロード内のクエリの大部分をサポートできない場合、この機能を有効にすると実際にパフォーマンスに悪影響を及ぼす可能性があります。
+In internal tests, enabling the non-prepared plan cache feature can achieve significant performance benefits in most TP scenarios. However, it also introduces some additional performance overhead, including determining whether the query is supported and parameterizing the query. If this feature cannot support the majority of queries in your workload, enabling it might actually adversely affect performance.
 
-この場合、Grafana の**[プラン キャッシュ OPS を使用したクエリ]**パネルの`non-prepared`メトリックと、 **[プラン キャッシュ ミス OPS]**パネルの`non-prepared-unsupported`メトリックを観察する必要があります。ほとんどのクエリがサポートされておらず、プラン キャッシュにヒットできるクエリが少数しかない場合は、この機能を無効にすることができます。
+In this case, you need to observe the `non-prepared` metric in the **Queries Using Plan Cache OPS** panel and the `non-prepared-unsupported` metric in the **Plan Cache Miss OPS** panel on Grafana. If most queries are not supported and only a few can hit the plan cache, you can disable this feature.
 
 ![non-prepared-unsupported](/media/non-prepapred-plan-cache-unsupprot.png)
 
-## 診断 {#diagnostics}
+## Diagnostics {#diagnostics}
 
-準備されていないプラン キャッシュを有効にした後、 `EXPLAIN FORMAT='plan_cache' SELECT ...`ステートメントを実行して、クエリがキャッシュにヒットできるかどうかを確認できます。キャッシュにヒットできないクエリの場合、システムは警告としてその理由を返します。
+After enabling the non-prepared plan cache, you can execute the `EXPLAIN FORMAT='plan_cache' SELECT ...` statement to verify whether the query can hit the cache. For queries that cannot hit the cache, the system returns the reason in a warning.
 
-`FORMAT='plan_cache'`を追加しない場合、 `EXPLAIN`ステートメントはキャッシュにヒットしないことに注意してください。
+Note that if you do not add `FORMAT='plan_cache'`, the `EXPLAIN` statement will never hit the cache.
 
-クエリがキャッシュにヒットするかどうかを確認するには、次の`EXPLAIN FORMAT='plan_cache'`ステートメントを実行します。
+To verify whether the query hits the cache, execute the following `EXPLAIN FORMAT='plan_cache'` statement:
 
 ```sql
-EXPLAIN FORMAT='plan_cache' SELECT * FROM (SELECT a+1 FROM t1) t;
+EXPLAIN FORMAT='plan_cache' SELECT * FROM (SELECT a+1 FROM t) t;
 ```
 
-出力は次のとおりです。
+The output is as follows:
 
 ```sql
 3 rows in set, 1 warning (0.00 sec)
 ```
 
-キャッシュにヒットできないクエリを表示するには、 `SHOW warnings;`を実行します。
+To view the queries that cannot hit the cache, execute `SHOW warnings;`:
 
 ```sql
 SHOW warnings;
 ```
 
-出力は次のとおりです。
+The output is as follows:
 
 ```sql
 +---------+------+-------------------------------------------------------------------------------+
@@ -138,29 +138,29 @@ SHOW warnings;
 1 row in set (0.00 sec)
 ```
 
-前の例では、準備されていないプラン キャッシュが`+`操作をサポートしていないため、クエリはキャッシュにヒットできません。
+In the preceding example, the query cannot hit the cache because the non-prepared plan cache does not support the `+` operation.
 
-## モニタリング {#monitoring}
+## Monitoring {#monitoring}
 
-未準備プラン キャッシュを有効にすると、次のペインでメモリ使用量、キャッシュ内のプラン数、キャッシュ ヒット率を監視できます。
+After enabling the non-prepared plan cache, you can monitor the memory usage, number of plans in the cache, and cache hit rate in the following panes:
 
 ![non-prepare-plan-cache](/media/tidb-non-prepared-plan-cache-metrics.png)
 
-`statements_summary`テーブルのキャッシュ ヒット率やスロー クエリ ログも監視できます。以下に、 `statements_summary`の表でキャッシュ ヒット率を表示する方法を示します。
+You can also monitor the cache hit rate in the `statements_summary` table and slow query log. The following shows how to view the cache hit rate in the `statements_summary` table:
 
-1.  テーブル`t`を作成します。
+1.  Create a table `t`:
 
     ```sql
     CREATE TABLE t (a int);
     ```
 
-2.  準備されていないプラン キャッシュを有効にします。
+2.  Enable the non-prepared plan cache:
 
     ```sql
     SET @@tidb_enable_non_prepared_plan_cache=ON;
     ```
 
-3.  次の 3 つのクエリを実行します。
+3.  Execute the following three queries:
 
     ```sql
     SELECT * FROM t WHERE a<1;
@@ -168,13 +168,13 @@ SHOW warnings;
     SELECT * FROM t WHERE a<3;
     ```
 
-4.  `statements_summary`テーブルをクエリして、キャッシュ ヒット率を表示します。
+4.  Query the `statements_summary` table to view the cache hit rate:
 
     ```sql
     SELECT digest_text, query_sample_text, exec_count, plan_in_cache, plan_cache_hits FROM INFORMATION_SCHEMA.STATEMENTS_SUMMARY WHERE query_sample_text LIKE '%SELECT * FROM %';
     ```
 
-    出力は次のとおりです。
+    The output is as follows:
 
     ```sql
     +---------------------------------+------------------------------------------+------------+---------------+-----------------+
@@ -185,4 +185,4 @@ SHOW warnings;
     1 row in set (0.01 sec)
     ```
 
-    出力から、クエリが 3 回実行され、キャッシュに 2 回ヒットしたことがわかります。
+    From the output, you can see that the query was executed three times and hit the cache twice.

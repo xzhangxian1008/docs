@@ -3,11 +3,11 @@ title: DROP ROLE | TiDB SQL Statement Reference
 summary: An overview of the usage of DROP ROLE for the TiDB database.
 ---
 
-# 役割を削除する {#drop-role}
+# DROP ROLE {#drop-role}
 
-このステートメントは、以前に`CREATE ROLE`で作成されたロールを削除します。
+This statement removes a role, that was previously created with `CREATE ROLE`.
 
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
 ```ebnf+diagram
 DropRoleStmt ::=
@@ -17,15 +17,15 @@ RolenameList ::=
     Rolename ( ',' Rolename )*
 ```
 
-## 例 {#examples}
+## Examples {#examples}
 
-`root`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `root` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u root
 ```
 
-新しいロール`analyticsteam`と新しいユーザー`jennifer`を作成します。
+Create a new role `analyticsteam` and a new user `jennifer`:
 
 ```sql
 CREATE ROLE analyticsteam;
@@ -41,13 +41,13 @@ GRANT analyticsteam TO jennifer;
 Query OK, 0 rows affected (0.01 sec)
 ```
 
-`jennifer`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `jennifer` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u jennifer
 ```
 
-デフォルトでは、 `analyticsteam`ロールに関連付けられた権限を使用できるようにするには、 `jennifer` `SET ROLE analyticsteam`実行する必要があることに注意してください。
+Note that by default `jennifer` needs to execute `SET ROLE analyticsteam` in order to be able to use the privileges associated with the `analyticsteam` role:
 
 ```sql
 SHOW GRANTS;
@@ -83,26 +83,26 @@ SHOW TABLES IN test;
 1 row in set (0.00 sec)
 ```
 
-`root`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `root` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u root
 ```
 
-ステートメント`SET DEFAULT ROLE`使用して、ロール`analyticsteam`を`jennifer`に関連付けることができます。
+The statement `SET DEFAULT ROLE` can be used to associate the role `analyticsteam` to `jennifer`:
 
 ```sql
 SET DEFAULT ROLE analyticsteam TO jennifer;
 Query OK, 0 rows affected (0.02 sec)
 ```
 
-`jennifer`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `jennifer` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u jennifer
 ```
 
-この後、ユーザー`jennifer`はロール`analyticsteam`に関連付けられた権限を持ち、ユーザー`jennifer`ステートメント`SET ROLE`を実行する必要がなくなります。
+After this, the user `jennifer` has the privileges associated with the role `analyticsteam` and `jennifer` does not have to execute the statement `SET ROLE`:
 
 ```sql
 SHOW GRANTS;
@@ -124,28 +124,28 @@ SHOW TABLES IN test;
 1 row in set (0.00 sec)
 ```
 
-`root`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `root` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u root
 ```
 
-`analyticsteam`のロールを削除します。
+Drop the role for the `analyticsteam`:
 
 ```sql
 DROP ROLE analyticsteam;
 Query OK, 0 rows affected (0.02 sec)
 ```
 
-`jennifer`はデフォルトのロール`analyticsteam`が関連付けられておらず、ロールを`analyticsteam`に設定することもできません。
+`jennifer` no longer has the default role of `analyticsteam` associated, nor can set the role to `analyticsteam`.
 
-`jennifer`ユーザーとして TiDB に接続します。
+Connect to TiDB as the `jennifer` user:
 
 ```shell
 mysql -h 127.0.0.1 -P 4000 -u jennifer
 ```
 
-`jennifer`の権限を表示します。
+Show the privileges of `jennifer`:
 
 ```sql
 SHOW GRANTS;
@@ -160,11 +160,11 @@ SET ROLE analyticsteam;
 ERROR 3530 (HY000): `analyticsteam`@`%` is is not granted to jennifer@%
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-TiDB の`DROP ROLE`ステートメントは、MySQL 8.0 のロール機能と完全な互換性があります。互換性の違いを見つけた場合は、 [GitHub の問題](https://github.com/pingcap/tidb/issues/new/choose)を介して報告してください。
+The `DROP ROLE` statement in TiDB is fully compatible with the roles feature in MySQL 8.0. If you find any compatibility differences, [report a bug](https://docs.pingcap.com/tidb/stable/support).
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
 -   [`CREATE ROLE`](/sql-statements/sql-statement-create-role.md)
 -   [`GRANT &#x3C;role>`](/sql-statements/sql-statement-grant-role.md)
@@ -174,6 +174,6 @@ TiDB の`DROP ROLE`ステートメントは、MySQL 8.0 のロール機能と完
 
 <CustomContent platform="tidb">
 
--   [役割ベースのアクセス制御](/role-based-access-control.md)
+-   [Role-Based Access Control](/role-based-access-control.md)
 
 </CustomContent>

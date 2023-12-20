@@ -3,19 +3,19 @@ title: SHOW [FULL] TABLES | TiDB SQL Statement Reference
 summary: An overview of the usage of SHOW [FULL] TABLES for the TiDB database.
 ---
 
-# [完全な] テーブルを表示 {#show-full-tables}
+# SHOW [FULL] TABLES {#show-full-tables}
 
-このステートメントは、現在選択されているデータベース内のテーブルとビューのリストを表示します。オプションのキーワード`FULL`テーブルのタイプが`BASE TABLE`か`VIEW`かを示します。
+This statement shows a list of tables and views in the currently selected database. The optional keyword `FULL` indicates if a table is of type `BASE TABLE` or `VIEW`.
 
-別のデータベース内のテーブルを表示するには、 `SHOW TABLES IN DatabaseName`を使用します。
+To show tables in a different database, use `SHOW TABLES IN DatabaseName`.
 
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
 **ShowTablesStmt:**
 
 ![ShowTablesStmt](/media/sqlgram/ShowTablesStmt.png)
 
-**オプトフル:**
+**OptFull:**
 
 ![OptFull](/media/sqlgram/OptFull.png)
 
@@ -27,7 +27,7 @@ summary: An overview of the usage of SHOW [FULL] TABLES for the TiDB database.
 
 ![ShowLikeOrWhereOpt](/media/sqlgram/ShowLikeOrWhereOpt.png)
 
-## 例 {#examples}
+## Examples {#examples}
 
 ```sql
 mysql> CREATE TABLE t1 (a int);
@@ -82,12 +82,12 @@ mysql> SHOW TABLES IN mysql;
 20 rows in set (0.00 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-TiDB の`SHOW [FULL] TABLES`ステートメントは MySQL と完全な互換性があります。互換性の違いを見つけた場合は、 [GitHub の問題](https://github.com/pingcap/tidb/issues/new/choose)を介して報告してください。
+The `SHOW [FULL] TABLES` statement in TiDB is fully compatible with MySQL. If you find any compatibility differences, [report a bug](https://docs.pingcap.com/tidb/stable/support).
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [テーブルの作成](/sql-statements/sql-statement-create-table.md)
--   [ドロップテーブル](/sql-statements/sql-statement-drop-table.md)
--   [テーブルの作成を表示](/sql-statements/sql-statement-show-create-table.md)
+-   [CREATE TABLE](/sql-statements/sql-statement-create-table.md)
+-   [DROP TABLE](/sql-statements/sql-statement-drop-table.md)
+-   [SHOW CREATE TABLE](/sql-statements/sql-statement-show-create-table.md)

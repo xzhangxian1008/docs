@@ -3,18 +3,18 @@ title: Filter Binlog Events
 summary: Learn how to filter binlog events when migrating data.
 ---
 
-# Binlogイベントのフィルタリング {#filter-binlog-events}
+# Filter Binlog Events {#filter-binlog-events}
 
-このドキュメントでは、DM を使用して継続的な増分データ レプリケーションを実行するときに、binlogイベントをフィルタリングする方法について説明します。レプリケーション手順の詳細については、シナリオごとに次のドキュメントを参照してください。
+This document describes how to filter binlog events when you use DM to perform continuous incremental data replication. For the detailed replication instructions, refer to the following documents by scenarios:
 
--   [小規模なデータセットの MySQL を TiDB に移行する](/migrate-small-mysql-to-tidb.md)
--   [大規模なデータセットの MySQL を TiDB に移行する](/migrate-large-mysql-to-tidb.md)
--   [小規模なデータセットの MySQL シャードを TiDB に移行およびマージする](/migrate-small-mysql-shards-to-tidb.md)
--   [大規模なデータセットの MySQL シャードを TiDB に移行およびマージする](/migrate-large-mysql-shards-to-tidb.md)
+-   [Migrate Small Datasets from MySQL to TiDB](/migrate-small-mysql-to-tidb.md)
+-   [Migrate Large Datasets from MySQL to TiDB](/migrate-large-mysql-to-tidb.md)
+-   [Migrate and Merge MySQL Shards of Small Datasets to TiDB](/migrate-small-mysql-shards-to-tidb.md)
+-   [Migrate and Merge MySQL Shards of Large Datasets to TiDB](/migrate-large-mysql-shards-to-tidb.md)
 
-## コンフィグレーション {#configuration}
+## Configuration {#configuration}
 
-binlogイベント フィルターを使用するには、以下に示すように、DM のタスク構成ファイルに`filter`を追加します。
+To use binlog event filter, add a `filter` to the task configuration file of DM, as shown below:
 
 ```yaml
 filters:
@@ -26,101 +26,95 @@ filters:
     action: Ignore
 ```
 
--   `schema-pattern` / `table-pattern` : スキーマまたはテーブルに一致するフィルター
+-   `schema-pattern`/`table-pattern`: Filters matching schemas or tables
 
--   `events` :binlogイベントをフィルタリングします。サポートされているイベントを次の表に示します。
+-   `events`: Filters binlog events. Supported events are listed in the table below:
 
-    | イベント         | カテゴリー | 説明                  |
-    | ------------ | ----- | ------------------- |
-    | 全て           |       | すべてのイベントが含まれます      |
-    | すべてのDML      |       | すべての DML イベントが含まれます |
-    | すべての ddl     |       | すべての DDL イベントが含まれます |
-    | なし           |       | イベントは含まれません         |
-    | なし           |       | すべての DDL イベントを除外します |
-    | なし           |       | すべての DML イベントを除外します |
-    | 入れる          | DML   | DML イベントの挿入         |
-    | アップデート       | DML   | DML イベントの更新         |
-    | 消去           | DML   | DMLイベントの削除          |
-    | データベースを作成する  | DDL   | データベースイベントの作成       |
-    | データベースを削除する  | DDL   | データベースドロップイベント      |
-    | テーブルを作成する    | DDL   | テーブルイベントの作成         |
-    | インデックスを作成する  | DDL   | インデックスイベントの作成       |
-    | ドロップテーブル     | DDL   | ドロップテーブルイベント        |
-    | テーブルを切り捨てる   | DDL   | テーブルの切り捨てイベント       |
-    | テーブルの名前を変更する | DDL   | テーブル名の変更イベント        |
-    | インデックスを削除    | DDL   | インデックスイベントのドロップ     |
-    | 他の机          | DDL   | テーブル変更イベント          |
+    | Event           | Category | Description             |
+    | --------------- | -------- | ----------------------- |
+    | all             |          | Includes all events     |
+    | all dml         |          | Includes all DML events |
+    | all ddl         |          | Includes all DDL events |
+    | none            |          | Includes no event       |
+    | none ddl        |          | Excludes all DDL events |
+    | none dml        |          | Excludes all DML events |
+    | insert          | DML      | Insert DML event        |
+    | update          | DML      | Update DML event        |
+    | delete          | DML      | Delete DML event        |
+    | create database | DDL      | Create database event   |
+    | drop database   | DDL      | Drop database event     |
+    | create table    | DDL      | Create table event      |
+    | create index    | DDL      | Create index event      |
+    | drop table      | DDL      | Drop table event        |
+    | truncate table  | DDL      | Truncate table event    |
+    | rename table    | DDL      | Rename table event      |
+    | drop index      | DDL      | Drop index event        |
+    | alter table     | DDL      | Alter table event       |
 
--   `sql-pattern` : 指定された DDL SQL ステートメントをフィルターします。一致ルールでは正規表現の使用がサポートされています。
+-   `sql-pattern`: Filters specified DDL SQL statements. The matching rule supports using a regular expression.
 
--   `action` ： `Do`または`Ignore`
+-   `action`: `Do` or `Ignore`
 
-    -   `Do` : 許可リスト。次の 2 つの条件のいずれかを満たしている場合、 binlogイベントはレプリケートされます。
+    -   `Do`: the allow list. A binlog event is replicated if meeting either of the following two conditions:
 
-        -   イベントはルール設定と一致します。
-        -   sql-pattern が指定されており、イベントの SQL ステートメントがいずれかの sql-pattern オプションと一致します。
+        -   The event matches the rule setting.
+        -   sql-pattern has been specified and the SQL statement of the event matches any of the sql-pattern options.
 
-    -   `Ignore` : ブロックリスト。次の 2 つの条件のいずれかを満たす場合、 binlogイベントはフィルターで除外されます。
+    -   `Ignore`: the block list. A binlog event is filtered out if meeting either of the following two conditions:
 
-        -   イベントはルール設定と一致します。
-        -   sql-pattern が指定されており、イベントの SQL ステートメントがいずれかの sql-pattern オプションと一致します。
+        -   The event matches the rule setting.
+        -   sql-pattern has been specified and the SQL statement of the event matches any of the sql-pattern options.
 
-    `Do`と`Ignore`両方が設定されている場合は、 `Ignore` `Do`よりも優先されます。つまり、 `Ignore`と`Do`の両方の条件を満たすイベントが除外されます。
+    If both `Do` and `Ignore` are configured, `Ignore` has higher priority over `Do`. That is, an event satisfying both `Ignore` and `Do` conditions will be filtered out.
 
-## アプリケーションシナリオ {#application-scenarios}
+## Application scenarios {#application-scenarios}
 
-このセクションでは、 binlogイベント フィルターの適用シナリオについて説明します。
+This section describes the application scenarios of binlog event filter.
 
-### すべてのシャーディング削除操作をフィルターで除外する {#filter-out-all-sharding-deletion-operations}
+### Filter out all sharding deletion operations {#filter-out-all-sharding-deletion-operations}
 
-すべての削除操作をフィルターで除外するには、以下に示すように`filter-table-rule`と`filter-schema-rule`を構成します。
+To filter out all deletion operations, configure a `filter-table-rule` and a `filter-schema-rule`, as shown below:
 
-```
-filters:
-  filter-table-rule:
-    schema-pattern: "test_*"
-    table-pattern: "t_*"
-    events: ["truncate table", "drop table", "delete"]
-    action: Ignore
-  filter-schema-rule:
-    schema-pattern: "test_*"
-    events: ["drop database"]
-    action: Ignore
-```
+    filters:
+      filter-table-rule:
+        schema-pattern: "test_*"
+        table-pattern: "t_*"
+        events: ["truncate table", "drop table", "delete"]
+        action: Ignore
+      filter-schema-rule:
+        schema-pattern: "test_*"
+        events: ["drop database"]
+        action: Ignore
 
-### シャード化されたスキーマとテーブルの DML 操作のみを移行する {#migrate-only-dml-operations-of-sharded-schemas-and-tables}
+### Migrate only DML operations of sharded schemas and tables {#migrate-only-dml-operations-of-sharded-schemas-and-tables}
 
-DML ステートメントのみをレプリケートするには、以下に示すように 2 つの`Binlog event filter rule`を構成します。
+To replicate only DML statements, configure two `Binlog event filter rule`, as shown below:
 
-```
-filters:
-  do-table-rule:
-    schema-pattern: "test_*"
-    table-pattern: "t_*"
-    events: ["create table", "all dml"]
-    action: Do
-  do-schema-rule:
-    schema-pattern: "test_*"
-    events: ["create database"]
-    action: Do
-```
+    filters:
+      do-table-rule:
+        schema-pattern: "test_*"
+        table-pattern: "t_*"
+        events: ["create table", "all dml"]
+        action: Do
+      do-schema-rule:
+        schema-pattern: "test_*"
+        events: ["create database"]
+        action: Do
 
-### TiDB でサポートされていない SQL ステートメントをフィルターで除外する {#filter-out-sql-statements-not-supported-by-tidb}
+### Filter out SQL statements not supported by TiDB {#filter-out-sql-statements-not-supported-by-tidb}
 
-TiDB でサポートされていない SQL ステートメントを除外するには、以下に示すように`filter-procedure-rule`を設定します。
+To filter out SQL statements not supported by TiDB, configure a `filter-procedure-rule`, as shown below:
 
-```
-filters:
-  filter-procedure-rule:
-    schema-pattern: "*"
-    sql-pattern: [".*\\s+DROP\\s+PROCEDURE", ".*\\s+CREATE\\s+PROCEDURE", "ALTER\\s+TABLE[\\s\\S]*ADD\\s+PARTITION", "ALTER\\s+TABLE[\\s\\S]*DROP\\s+PARTITION"]
-    action: Ignore
-```
+    filters:
+      filter-procedure-rule:
+        schema-pattern: "*"
+        sql-pattern: [".*\\s+DROP\\s+PROCEDURE", ".*\\s+CREATE\\s+PROCEDURE", "ALTER\\s+TABLE[\\s\\S]*ADD\\s+PARTITION", "ALTER\\s+TABLE[\\s\\S]*DROP\\s+PARTITION"]
+        action: Ignore
 
-> **警告：**
+> **Warning:**
 >
-> 移行する必要があるデータがフィルタリングされないようにするため、グローバル フィルタリング ルールをできるだけ厳密に構成します。
+> To avoid filtering out data that needs to be migrated, configure the global filtering rule as strictly as possible.
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
-[SQL式を使用したBinlogイベントのフィルタリング](/filter-dml-event.md)
+[Filter Binlog Events Using SQL Expressions](/filter-dml-event.md)

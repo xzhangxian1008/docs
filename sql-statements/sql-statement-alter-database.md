@@ -3,11 +3,11 @@ title: ALTER DATABASE | TiDB SQL Statement Reference
 summary: An overview of the usage of ALTER DATABASE for the TiDB database.
 ---
 
-# データベースの変更 {#alter-database}
+# ALTER DATABASE {#alter-database}
 
-`ALTER DATABASE`は、現在のデータベースのデフォルトの文字セットと照合順序を指定または変更するために使用されます。 `ALTER SCHEMA` `ALTER DATABASE`と同じ効果があります。
+`ALTER DATABASE` is used to specify or modify the default character set and collation of the current database. `ALTER SCHEMA` has the same effect as `ALTER DATABASE`.
 
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
 ```ebnf+diagram
 AlterDatabaseStmt ::=
@@ -17,11 +17,9 @@ DatabaseOption ::=
     DefaultKwdOpt ( CharsetKw '='? CharsetName | 'COLLATE' '='? CollationName | 'ENCRYPTION' '='? EncryptionOpt )
 ```
 
-## 例 {#examples}
+## Examples {#examples}
 
-utf8mb4 文字セットを使用するようにテスト データベース スキーマを変更します。
-
-{{< copyable "" >}}
+Modify the test database schema to use the utf8mb4 character set:
 
 ```sql
 ALTER DATABASE test DEFAULT CHARACTER SET = utf8mb4;
@@ -31,13 +29,13 @@ ALTER DATABASE test DEFAULT CHARACTER SET = utf8mb4;
 Query OK, 0 rows affected (0.00 sec)
 ```
 
-現在、TiDB は一部の文字セットと照合順序のみをサポートしています。詳細については[文字セットと照合順序のサポート](/character-set-and-collation.md)を参照してください。
+Currently, TiDB only supports some character sets and collations. See [Character Set and Collation Support](/character-set-and-collation.md) for details.
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-TiDB の`ALTER DATABASE`ステートメントは MySQL と完全な互換性があります。互換性の違いを見つけた場合は、 [GitHub の問題](https://github.com/pingcap/tidb/issues/new/choose)を介して報告してください。
+The `ALTER DATABASE` statement in TiDB is fully compatible with MySQL. If you find any compatibility differences, [report a bug](https://docs.pingcap.com/tidb/stable/support).
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [データベースの作成](/sql-statements/sql-statement-create-database.md)
--   [データベースを表示する](/sql-statements/sql-statement-show-databases.md)
+-   [CREATE DATABASE](/sql-statements/sql-statement-create-database.md)
+-   [SHOW DATABASES](/sql-statements/sql-statement-show-databases.md)

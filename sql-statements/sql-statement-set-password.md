@@ -3,17 +3,17 @@ title: SET PASSWORD | TiDB SQL Statement Reference
 summary: An overview of the usage of SET PASSWORD for the TiDB database.
 ---
 
-# パスワードを設定してください {#set-password}
+# SET PASSWORD {#set-password}
 
-このステートメントは、TiDB システム データベース内のユーザー アカウントのユーザー パスワードを変更します。
+This statement changes the user password for a user account in the TiDB system database.
 
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
-**セットステート:**
+**SetStmt:**
 
 ![SetStmt](/media/sqlgram/SetStmt.png)
 
-## 例 {#examples}
+## Examples {#examples}
 
 ```sql
 mysql> SET PASSWORD='test'; -- change my password
@@ -53,16 +53,16 @@ mysql> SHOW CREATE USER 'newuser';
 1 row in set (0.00 sec)
 ```
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
-TiDB の`SET PASSWORD`ステートメントは MySQL と完全な互換性があります。互換性の違いを見つけた場合は、 [GitHub の問題](https://github.com/pingcap/tidb/issues/new/choose)を介して報告してください。
+The `SET PASSWORD` statement in TiDB is fully compatible with MySQL. If you find any compatibility differences, [report a bug](https://docs.pingcap.com/tidb/stable/support).
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [ユーザーを作成](/sql-statements/sql-statement-create-user.md)
+-   [CREATE USER](/sql-statements/sql-statement-create-user.md)
 
 <CustomContent platform="tidb">
 
--   [権限管理](/privilege-management.md)
+-   [Privilege Management](/privilege-management.md)
 
 </CustomContent>
