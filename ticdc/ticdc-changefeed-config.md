@@ -3,11 +3,11 @@ title: CLI and Configuration Parameters of TiCDC Changefeeds
 summary: Learn the definitions of CLI and configuration parameters of TiCDC changefeeds.
 ---
 
-# TiCDC 変更フィードの CLI およびコンフィグレーションパラメーター {#cli-and-configuration-parameters-of-ticdc-changefeeds}
+# CLI and Configuration Parameters of TiCDC Changefeeds {#cli-and-configuration-parameters-of-ticdc-changefeeds}
 
-## 変更フィード CLI パラメータ {#changefeed-cli-parameters}
+## Changefeed CLI parameters {#changefeed-cli-parameters}
 
-このセクションでは、レプリケーション (変更フィード) タスクの作成方法を示して、TiCDC 変更フィードのコマンド ライン パラメーターを紹介します。
+This section introduces the command-line parameters of TiCDC changefeeds by illustrating how to create a replication (changefeed) task:
 
 ```shell
 cdc cli changefeed create --server=http://10.0.10.25:8300 --sink-uri="mysql://root:123456@127.0.0.1:3306/" --changefeed-id="simple-replication-task"
@@ -16,28 +16,26 @@ cdc cli changefeed create --server=http://10.0.10.25:8300 --sink-uri="mysql://ro
 ```shell
 Create changefeed successfully!
 ID: simple-replication-task
-Info: {"upstream_id":7178706266519722477,"namespace":"default","id":"simple-replication-task","sink_uri":"mysql://root:xxxxx@127.0.0.1:4000/?time-zone=","create_time":"2022-12-19T15:05:46.679218+08:00","start_ts":438156275634929669,"engine":"unified","config":{"case_sensitive":true,"enable_old_value":true,"force_replicate":false,"ignore_ineligible_table":false,"check_gc_safe_point":true,"enable_sync_point":true,"bdr_mode":false,"sync_point_interval":30000000000,"sync_point_retention":3600000000000,"filter":{"rules":["test.*"],"event_filters":null},"mounter":{"worker_num":16},"sink":{"protocol":"","schema_registry":"","csv":{"delimiter":",","quote":"\"","null":"\\N","include_commit_ts":false},"column_selectors":null,"transaction_atomicity":"none","encoder_concurrency":16,"terminator":"\r\n","date_separator":"none","enable_partition_separator":false},"consistent":{"level":"none","max_log_size":64,"flush_interval":2000,"storage":""}},"state":"normal","creator_version":"v6.5.0"}
+Info: {"upstream_id":7178706266519722477,"namespace":"default","id":"simple-replication-task","sink_uri":"mysql://root:xxxxx@127.0.0.1:4000/?time-zone=","create_time":"2023-12-21T15:05:46.679218+08:00","start_ts":438156275634929669,"engine":"unified","config":{"case_sensitive":false,"enable_old_value":true,"force_replicate":false,"ignore_ineligible_table":false,"check_gc_safe_point":true,"enable_sync_point":true,"bdr_mode":false,"sync_point_interval":30000000000,"sync_point_retention":3600000000000,"filter":{"rules":["test.*"],"event_filters":null},"mounter":{"worker_num":16},"sink":{"protocol":"","schema_registry":"","csv":{"delimiter":",","quote":"\"","null":"\\N","include_commit_ts":false},"column_selectors":null,"transaction_atomicity":"none","encoder_concurrency":16,"terminator":"\r\n","date_separator":"none","enable_partition_separator":false},"consistent":{"level":"none","max_log_size":64,"flush_interval":2000,"storage":""}},"state":"normal","creator_version":"v7.1.3"}
 ```
 
--   `--changefeed-id` : レプリケーション タスクの ID。形式は`^[a-zA-Z0-9]+(\-[a-zA-Z0-9]+)*$`正規表現と一致する必要があります。この ID が指定されていない場合、TiCDC は UUID (バージョン 4 形式) を ID として自動的に生成します。
+-   `--changefeed-id`: The ID of the replication task. The format must match the `^[a-zA-Z0-9]+(\-[a-zA-Z0-9]+)*$` regular expression. If this ID is not specified, TiCDC automatically generates a UUID (the version 4 format) as the ID.
 
--   `--sink-uri` : レプリケーションタスクの下流アドレス。 `--sink-uri`を以下の形式で設定します。現在、このスキームは`mysql` 、 `tidb` 、および`kafka`をサポートしています。
+-   `--sink-uri`: The downstream address of the replication task. Configure `--sink-uri` according to the following format. Currently, the scheme supports `mysql`, `tidb`, and `kafka`.
 
-    ```
-    [scheme]://[userinfo@][host]:[port][/path]?[query_parameters]
-    ```
+        [scheme]://[userinfo@][host]:[port][/path]?[query_parameters]
 
-    シンク URI に`! * ' ( ) ; : @ & = + $ , / ? % # [ ]`などの特殊文字が含まれている場合は、特殊文字をエスケープする必要があります (たとえば、 [URIエンコーダ](https://meyerweb.com/eric/tools/dencoder/) 。
+    When the sink URI contains special characters such as `! * ' ( ) ; : @ & = + $ , / ? % # [ ]`, you need to escape the special characters, for example, in [URI Encoder](https://www.urlencoder.org/).
 
--   `--start-ts` : チェンジフィードの開始 TSO を指定します。この TSO から、TiCDC クラスターはデータのプルを開始します。デフォルト値は現在時刻です。
+-   `--start-ts`: Specifies the starting TSO of the changefeed. From this TSO, the TiCDC cluster starts pulling data. The default value is the current time.
 
--   `--target-ts` : チェンジフィードの終了 TSO を指定します。この TSO に対して、TiCDC クラスターはデータのプルを停止します。デフォルト値は空です。これは、TiCDC がデータのプルを自動的に停止しないことを意味します。
+-   `--target-ts`: Specifies the ending TSO of the changefeed. To this TSO, the TiCDC cluster stops pulling data. The default value is empty, which means that TiCDC does not automatically stop pulling data.
 
--   `--config` : チェンジフィードの設定ファイルを指定します。
+-   `--config`: Specifies the configuration file of the changefeed.
 
-## 変更フィード構成パラメータ {#changefeed-configuration-parameters}
+## Changefeed configuration parameters {#changefeed-configuration-parameters}
 
-このセクションでは、レプリケーション タスクの構成について説明します。
+This section introduces the configuration of a replication task.
 
 ```toml
 # Specifies the memory quota (in bytes) that can be used in the capture server by the sink manager.
@@ -46,29 +44,33 @@ Info: {"upstream_id":7178706266519722477,"namespace":"default","id":"simple-repl
 # memory-quota = 1073741824
 
 # Specifies whether the database names and tables in the configuration file are case-sensitive.
-# The default value is true.
+# Starting from v6.5.6 and v7.1.3, the default value changes from true to false.
 # This configuration item affects configurations related to filter and sink.
-case-sensitive = true
+case-sensitive = false
 
 # Specifies whether to output the old value. New in v4.0.5. Since v5.0, the default value is `true`.
 enable-old-value = true
 
 # Specifies whether to enable the Syncpoint feature, which is supported since v6.3.0 and is disabled by default.
 # Since v6.4.0, only the changefeed with the SYSTEM_VARIABLES_ADMIN or SUPER privilege can use the TiCDC Syncpoint feature.
-# Note: This configuration item only takes effect if the downstream is Kafka or a storage service.
+# Note: This configuration item only takes effect if the downstream is TiDB.
 # enable-sync-point = false
 
 # Specifies the interval at which Syncpoint aligns the upstream and downstream snapshots.
 # The format is in h m s. For example, "1h30m30s".
 # The default value is "10m" and the minimum value is "30s".
-# Note: This configuration item only takes effect if the downstream is Kafka or a storage service.
+# Note: This configuration item only takes effect if the downstream is TiDB.
 # sync-point-interval = "5m"
 
 # Specifies how long the data is retained by Syncpoint in the downstream table. When this duration is exceeded, the data is cleaned up.
 # The format is in h m s. For example, "24h30m30s".
 # The default value is "24h".
-# Note: This configuration item only takes effect if the downstream is Kafka or a storage service.
+# Note: This configuration item only takes effect if the downstream is TiDB.
 # sync-point-retention = "1h"
+
+# Starting from v6.5.6 and v7.1.3, this configuration item specifies the SQL mode used when parsing DDL statements. Multiple modes are separated by commas.
+# The default value is the same as the default SQL mode of TiDB.
+# sql-mode = "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"
 
 [mounter]
 # The number of threads with which the mounter decodes KV data. The default value is 16.
@@ -81,10 +83,6 @@ enable-old-value = true
 # Filter rules.
 # Filter syntax: <https://docs.pingcap.com/tidb/stable/table-filter#syntax>.
 rules = ['*.*', '!test.*']
-
-# Specifies the transaction that will be ignored with the specified start_ts.
-# The default value is an empty list.
-# IgnoreTxnStartTs = []
 
 # Event filter rules.
 # The detailed syntax is described in <https://docs.pingcap.com/tidb/stable/ticdc-filter>
@@ -105,20 +103,18 @@ rules = ['*.*', '!test.*']
 # ignore-insert-value-expr = "price > 1000 and origin = 'no where'" # Ignore insert DMLs that contain the conditions "price > 1000" and "origin = 'no where'".
 
 [scheduler]
-# Splits a table into multiple replication ranges based on the number of Regions, and these ranges can be replicated by multiple TiCDC nodes.
+# Allocate tables to multiple TiCDC nodes for replication on a per-Region basis.
 # Note: This configuration item only takes effect on Kafka changefeeds and is not supported on MySQL changefeeds.
 # The value is "false" by default. Set it to "true" to enable this feature.
 enable-table-across-nodes = false
-# When you enable this feature, it takes effect for tables with the number of Regions greater than the `region-threshold` value.
-region-threshold = 100000
-# When you enable this feature, it takes effect for tables with the number of rows modified per minute greater than the `write-key-threshold` value.
+# When `enable-table-across-nodes` is enabled, there are two allocation modes:
+# 1. Allocate tables based on the number of Regions, so that each TiCDC node handles roughly the same number of Regions. If the number of Regions for a table exceeds the value of `region-threshold`, the table will be allocated to multiple nodes for replication. The default value of `region-threshold` is 10000.
+# region-threshold = 10000
+# 2. Allocate tables based on the write traffic, so that each TiCDC node handles roughly the same number of modified rows. Only when the number of modified rows per minute in a table exceeds the value of `write-key-threshold`, will this allocation take effect.
+# write-key-threshold = 30000
 # Note:
-# * The default value of `write-key-threshold` is 0, which means that the feature does not split the table replication range according to the number of rows modified in a table by default.
-# * You can configure this parameter according to your cluster workload. For example, if it is configured as 30000, it means that the feature will split the replication range of a table when the number of modified rows per minute in the table exceeds 30000.
-# * When `region-threshold` and `write-key-threshold` are configured at the same time:
-#   TiCDC will check whether the number of modified rows is greater than `write-key-threshold` first.
-#   If not, next check whether the number of Regions is greater than `region-threshold`.
-write-key-threshold = 0
+# * The default value of `write-key-threshold` is 0, which means that the traffic allocation mode is not used by default.
+# * You only need to configure one of the two modes. If both `region-threshold` and `write-key-threshold` are configured, TiCDC prioritizes the traffic allocation mode, namely `write-key-threshold`.
 
 [sink]
 # For the sink of MQ type, you can use dispatchers to configure the event dispatcher.
@@ -141,9 +137,9 @@ write-key-threshold = 0
 # The following three configuration items are only used when you replicate data to storage sinks and can be ignored when replicating data to MQ or MySQL sinks.
 # Row terminator, used for separating two data change events. The default value is an empty string, which means "\r\n" is used.
 # terminator = ''
-# Date separator type used in the file directory. Value options are `none`, `year`, `month`, and `day`. `none` is the default value and means that the date is not separated. For more information, see <https://docs.pingcap.com/tidb/v7.1/ticdc-sink-to-cloud-storage#data-change-records>.
+# Date separator type used in the file directory. Value options are `none`, `year`, `month`, and `day`. `day` is the default value and means separating files by day. For more information, see <https://docs.pingcap.com/tidb/v7.1/ticdc-sink-to-cloud-storage#data-change-records>.
 # Note: This configuration item only takes effect if the downstream is a storage service.
-date-separator = 'none'
+date-separator = 'day'
 # Whether to use partitions as the separation string. The default value is true, which means that partitions in a table are stored in separate directories. It is recommended that you keep the value as `true` to avoid potential data loss in downstream partitioned tables <https://github.com/pingcap/tiflow/issues/8724>. For usage examples, see <https://docs.pingcap.com/tidb/v7.1/ticdc-sink-to-cloud-storage#data-change-records>.
 # Note: This configuration item only takes effect if the downstream is a storage service.
 enable-partition-separator = true
@@ -177,6 +173,8 @@ enable-partition-separator = true
 # null = '\N'
 # Whether to include commit-ts in CSV rows. The default value is false.
 # include-commit-ts = false
+# The encoding method of binary data, which can be 'base64' or 'hex'. New in v7.1.2. The default value is 'base64'.
+# binary-encoding-method = 'base64'
 
 # Specifies the replication consistency configurations for a changefeed when using the redo log. For more information, see https://docs.pingcap.com/tidb/stable/ticdc-sink-to-mysql#eventually-consistent-replication-in-disaster-scenarios.
 # Note: The consistency-related configuration items only take effect when the downstream is a database and the redo log feature is enabled.
@@ -192,9 +190,21 @@ flush-interval = 2000
 # The storage URI of the redo log.
 # The default value is empty.
 storage = ""
-# Specifies whether to store the redo log in a file.
+# Specifies whether to store the redo log in a local file.
 # The default value is false.
 use-file-backend = false
+# The number of encoding and decoding workers in the redo module.
+# The default value is 16.
+encoding-worker-num = 16
+# The number of flushing workers in the redo module.
+# The default value is 8.
+flush-worker-num = 8
+# The behavior to compress redo log files.
+# Available options are "" and "lz4". The default value is "", which means no compression.
+compression = ""
+# The concurrency for uploading a single redo file.
+# The default value is 1, which means concurrency is disabled.
+flush-concurrency = 1
 
 [integrity]
 # Whether to enable the checksum validation for single-row data. The default value is "none", which means to disable the feature. Value options are "none" and "correctness".
@@ -218,4 +228,24 @@ sasl-oauth-scopes = ["producer.kafka", "consumer.kafka"]
 sasl-oauth-grant-type = "client_credentials"
 # The audience in the Kafka SASL OAUTHBEARER authentication. The default value is empty. This parameter is optional when the OAUTHBEARER authentication is used.
 sasl-oauth-audience = "kafka"
+
+[sink.cloud-storage-config]
+# The concurrency for saving data changes to the downstream cloud storage. 
+# The default value is 16.
+worker-count = 16
+# The interval for saving data changes to the downstream cloud storage.
+# The default value is "2s".
+flush-interval = "2s"
+# A data change file is saved to the cloud storage when the number of bytes in this file exceeds `file-size`.
+# The default value is 67108864 (this is, 64 MiB).
+file-size = 67108864
+# The duration to retain files, which takes effect only when `date-separator` is configured as `day`. Assume that `file-expiration-days = 1` and `file-cleanup-cron-spec = "0 0 0 * * *"`, then TiCDC performs daily cleanup at 00:00:00 for files saved beyond 24 hours. For example, at 00:00:00 on 2023/12/02, TiCDC cleans up files generated before 2023/12/01, while files generated on 2023/12/01 remain unaffected.
+# The default value is 0, which means file cleanup is disabled. 
+file-expiration-days = 0
+# The running cycle of the scheduled cleanup task, compatible with the crontab configuration, with a format of `<Second> <Minute> <Hour> <Day of the month> <Month> <Day of the week (Optional)>`
+# The default value is "0 0 2 * * *", which means that the cleanup task is executed every day at 2 AM.
+file-cleanup-cron-spec = "0 0 2 * * *"
+# The concurrency for uploading a single file.
+# The default value is 1, which means concurrency is disabled.
+flush-concurrency = 1
 ```

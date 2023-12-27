@@ -5,13 +5,13 @@ summary: An overview of the usage of EXPLAIN for the TiDB database.
 
 # <code>EXPLAIN</code> {#code-explain-code}
 
-`EXPLAIN`ステートメントは、クエリを実行せずにクエリの実行計画を示します。これに`EXPLAIN ANALYZE`付加すると、クエリが実行されます。 `EXPLAIN`の出力が予期した結果と一致しない場合は、クエリ内の各テーブルに対して`ANALYZE TABLE`を実行することを検討してください。
+The `EXPLAIN` statement shows the execution plan for a query without executing it. It is complimented by `EXPLAIN ANALYZE` which will execute the query. If the output of `EXPLAIN` does not match the expected result, consider executing `ANALYZE TABLE` on each table in the query.
 
-ステートメント`DESC`と`DESCRIBE`は、このステートメントの別名です。 `EXPLAIN <tableName>`の別の使用法は[`SHOW [FULL] COLUMNS FROM`](/sql-statements/sql-statement-show-columns-from.md)に記載されています。
+The statements `DESC` and `DESCRIBE` are aliases of this statement. The alternative usage of `EXPLAIN <tableName>` is documented under [`SHOW [FULL] COLUMNS FROM`](/sql-statements/sql-statement-show-columns-from.md).
 
-TiDB は`EXPLAIN [options] FOR CONNECTION connection_id`ステートメントをサポートします。ただし、このステートメントは MySQL の`EXPLAIN FOR`ステートメントとは異なります。詳細については、 [`EXPLAIN FOR CONNECTION`](#explain-for-connection)を参照してください。
+TiDB supports the `EXPLAIN [options] FOR CONNECTION connection_id` statement. However, this statement is different from the `EXPLAIN FOR` statement in MySQL. For more details, see [`EXPLAIN FOR CONNECTION`](#explain-for-connection).
 
-## あらすじ {#synopsis}
+## Synopsis {#synopsis}
 
 ```ebnf+diagram
 ExplainSym ::=
@@ -31,29 +31,27 @@ ExplainableStmt ::=
 |   UnionStmt
 ```
 
-## <code>EXPLAIN</code>出力形式 {#code-explain-code-output-format}
+## <code>EXPLAIN</code> output format {#code-explain-code-output-format}
 
-> **ノート：**
+> **Note:**
 >
-> MySQL クライアントを使用して TiDB に接続する場合、行の折り返しを行わずに出力結果をより明確に読み取るには、 `pager less -S`コマンドを使用できます。次に、 `EXPLAIN`結果が出力された後、キーボードの右矢印<kbd>→</kbd>ボタンを押して出力を水平方向にスクロールします。
+> When you use the MySQL client to connect to TiDB, to read the output result in a clearer way without line wrapping, you can use the `pager less -S` command. Then, after the `EXPLAIN` result is output, you can press the right arrow <kbd>→</kbd> button on your keyboard to horizontally scroll through the output.
 
-> **ノート：**
+> **Note:**
 >
-> 返された実行プランでは、 `IndexJoin`および`Apply`演算子のすべてのプローブ側子ノードについて、v6.4.0 以降の`estRows`の意味は v6.4.0 以前とは異なります。詳細については[TiDB クエリ実行計画の概要](/explain-overview.md#understand-explain-output)を参照してください。
+> In the returned execution plan, for all probe-side child nodes of `IndexJoin` and `Apply` operators, the meaning of `estRows` since v6.4.0 is different from that before v6.4.0. You can find details in [TiDB Query Execution Plan Overview](/explain-overview.md#understand-explain-output).
 
-現在、TiDB の`EXPLAIN`は`id` 、 `estRows` 、 `task` 、 `access object` 、 `operator info`の 5 つの列を出力します。実行プラン内の各演算子はこれらの属性によって記述され、 `EXPLAIN`の出力の各行が演算子を記述します。各属性の説明は次のとおりです。
+Currently, `EXPLAIN` in TiDB outputs 5 columns: `id`, `estRows`, `task`, `access object`, `operator info`. Each operator in the execution plan is described by these attributes, with each row in the `EXPLAIN` output describing an operator. The description of each attribute is as follows:
 
-| 属性名        | 説明                                                                                                                                                                                                                                                                                                                           |
-| :--------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ID         | オペレーター ID は、実行プラン全体におけるオペレーターの一意の識別子です。 TiDB 2.1 では、ID はオペレーターのツリー構造を表示する形式になっています。データは子ノードから親ノードに流れます。各オペレーターに 1 つだけの親ノード。                                                                                                                                                                                                  |
-| estRows    | オペレーターが出力すると予想される行数。この数値は、統計とオペレーターのロジックに従って推定されます。 `estRows`は、TiDB 4.0 の以前のバージョンでは`count`と呼ばれていました。                                                                                                                                                                                                                         |
-| タスク        | オペレーターが属するタスクのタイプ。現在、実行計画は 2 つのタスクに分割されています。1 つは tidb-server 上で実行される**root**タスク、もう 1 つは TiKV またはTiFlash上で並行して実行される**cop**タスクです。タスク レベルでの実行計画のトポロジは、ルート タスクの後に多くのcop タスクが続くというものです。 root タスクは、cop タスクの出力を入力として使用します。 cop タスクは、TiDB が TiKV またはTiFlashにプッシュダウンするタスクを指します。各copタスクはTiKVクラスタまたはTiFlashクラスタに分散され、複数のプロセスによって実行されます。 |
-| アクセスオブジェクト | オペレータがアクセスするデータ項目の情報。情報には、 `table` 、 `partition` 、および`index` (存在する場合) が含まれます。このような情報を持っているのは、データに直接アクセスするオペレーターだけです。                                                                                                                                                                                                         |
-| オペレーター情報   | オペレーターに関するその他の情報。各演算子の`operator info`は異なります。次の例を参照してください。                                                                                                                                                                                                                                                                    |
+| Attribute name | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| id             | The operator ID is the unique identifier of the operator in the entire execution plan. In TiDB 2.1, the ID is formatted to display the tree structure of the operator. Data flows from the child node to the parent node. One and only one parent node for each operator.                                                                                                                                                                                                                                                                                                   |
+| estRows        | The number of rows that the operator is expected to output. This number is estimated according to the statistics and the operator's logic. `estRows` is called `count` in the earlier versions of TiDB 4.0.                                                                                                                                                                                                                                                                                                                                                                 |
+| task           | The type of task the operator belongs to. Currently, the execution plans are divided into two tasks: **root** task, which is executed on tidb-server, and **cop** task, which is performed in parallel on TiKV or TiFlash. The topology of the execution plan at the task level is that a root task followed by many cop tasks. The root task uses the output of cop tasks as input. The cop tasks refer to tasks that TiDB pushes down to TiKV or TiFlash. Each cop task is distributed in the TiKV cluster or the TiFlash cluster, and is executed by multiple processes. |
+| access object  | Data item information accessed by the operator. The information includes `table`, `partition`, and `index` (if any). Only operators that directly access the data have such information.                                                                                                                                                                                                                                                                                                                                                                                    |
+| operator info  | Other information about the operator. `operator info` of each operator is different. You can refer to the following examples.                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
-## 例 {#examples}
-
-{{< copyable "" >}}
+## Examples {#examples}
 
 ```sql
 EXPLAIN SELECT 1;
@@ -69,8 +67,6 @@ EXPLAIN SELECT 1;
 2 rows in set (0.00 sec)
 ```
 
-{{< copyable "" >}}
-
 ```sql
 CREATE TABLE t1 (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, c1 INT NOT NULL);
 ```
@@ -78,8 +74,6 @@ CREATE TABLE t1 (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, c1 INT NOT NULL);
 ```sql
 Query OK, 0 rows affected (0.10 sec)
 ```
-
-{{< copyable "" >}}
 
 ```sql
 INSERT INTO t1 (c1) VALUES (1), (2), (3);
@@ -89,8 +83,6 @@ INSERT INTO t1 (c1) VALUES (1), (2), (3);
 Query OK, 3 rows affected (0.02 sec)
 Records: 3  Duplicates: 0  Warnings: 0
 ```
-
-{{< copyable "" >}}
 
 ```sql
 EXPLAIN SELECT * FROM t1 WHERE id = 1;
@@ -105,8 +97,6 @@ EXPLAIN SELECT * FROM t1 WHERE id = 1;
 1 row in set (0.00 sec)
 ```
 
-{{< copyable "" >}}
-
 ```sql
 DESC SELECT * FROM t1 WHERE id = 1;
 ```
@@ -119,8 +109,6 @@ DESC SELECT * FROM t1 WHERE id = 1;
 +-------------+---------+------+---------------+---------------+
 1 row in set (0.00 sec)
 ```
-
-{{< copyable "" >}}
 
 ```sql
 DESCRIBE SELECT * FROM t1 WHERE id = 1;
@@ -135,8 +123,6 @@ DESCRIBE SELECT * FROM t1 WHERE id = 1;
 1 row in set (0.00 sec)
 ```
 
-{{< copyable "" >}}
-
 ```sql
 EXPLAIN INSERT INTO t1 (c1) VALUES (4);
 ```
@@ -149,8 +135,6 @@ EXPLAIN INSERT INTO t1 (c1) VALUES (4);
 +----------+---------+------+---------------+---------------+
 1 row in set (0.00 sec)
 ```
-
-{{< copyable "" >}}
 
 ```sql
 EXPLAIN UPDATE t1 SET c1=5 WHERE c1=3;
@@ -168,8 +152,6 @@ EXPLAIN UPDATE t1 SET c1=5 WHERE c1=3;
 4 rows in set (0.00 sec)
 ```
 
-{{< copyable "" >}}
-
 ```sql
 EXPLAIN DELETE FROM t1 WHERE c1=3;
 ```
@@ -186,23 +168,23 @@ EXPLAIN DELETE FROM t1 WHERE c1=3;
 4 rows in set (0.01 sec)
 ```
 
-`EXPLAIN`出力の形式を指定するには、 `FORMAT = xxx`構文を使用できます。現在、TiDB は次の形式をサポートしています。
+To specify the format of the `EXPLAIN` output, you can use the `FORMAT = xxx` syntax. Currently, TiDB supports the following formats:
 
-| フォーマット      | 説明                                                                                                |
-| ----------- | ------------------------------------------------------------------------------------------------- |
-| 指定されていない    | 形式が指定されていない場合、 `EXPLAIN`​​デフォルトの形式`row`を使用します。                                                    |
-| `row`       | `EXPLAIN`ステートメントは結果を表形式で出力します。詳細については、 [クエリ実行計画を理解する](/explain-overview.md)参照してください。              |
-| `brief`     | `EXPLAIN`ステートメントの出力のオペレーター ID は、 `FORMAT`指定しない場合に比べて簡略化されます。                                      |
-| `dot`       | `EXPLAIN`ステートメントは DOT 実行プランを出力します。これは、( `graphviz`パッケージ内の) `dot`プログラムを通じて PNG ファイルを生成するために使用できます。 |
-| `tidb_json` | `EXPLAIN`ステートメントは、実行プランを JSON で出力し、オペレーター情報を JSON 配列に保存します。                                       |
+| FORMAT        | Description                                                                                                                                                                                                                                                 |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Not specified | If the format is not specified, `EXPLAIN` uses the default format `row`.                                                                                                                                                                                    |
+| `brief`       | The operator IDs in the output of the `EXPLAIN` statement are simplified, compared with those when `FORMAT` is left unspecified.                                                                                                                            |
+| `dot`         | The `EXPLAIN` statement outputs DOT execution plans, which can be used to generate PNG files through a `dot` program (in the `graphviz` package).                                                                                                           |
+| `row`         | The `EXPLAIN` statement outputs results in a tabular format. See [Understand the Query Execution Plan](/explain-overview.md) for more information.                                                                                                          |
+| `tidb_json`   | The `EXPLAIN` statement outputs execution plans in JSON and stores the operator information in a JSON array.                                                                                                                                                |
+| `verbose`     | The `EXPLAIN` statement outputs results in the `row` format, with an additional `estCost` column for the estimated cost of the query in the results. For more information about how to use this format, see [SQL Plan Management](/sql-plan-management.md). |
+| `plan_cache`  | The `EXPLAIN` statement outputs results in the `row` format, with the [Plan Cache](/sql-non-prepared-plan-cache.md#diagnostics) information as a warning.                                                                                                   |
 
 <SimpleTab>
 
 <div label="brief">
 
-以下は`FORMAT` `EXPLAIN`の`"brief"`である場合の例です。
-
-{{< copyable "" >}}
+The following is an example when `FORMAT` is `"brief"` in `EXPLAIN`:
 
 ```sql
 EXPLAIN FORMAT = "brief" DELETE FROM t1 WHERE c1 = 3;
@@ -224,9 +206,7 @@ EXPLAIN FORMAT = "brief" DELETE FROM t1 WHERE c1 = 3;
 
 <div label="DotGraph">
 
-MySQL の標準結果形式に加えて、TiDB は DotGraph もサポートしており、次の例のように`FORMAT = "dot"`を指定する必要があります。
-
-{{< copyable "" >}}
+In addition to the MySQL standard result format, TiDB also supports DotGraph and you need to specify `FORMAT = "dot"` as in the following example:
 
 ```sql
 CREATE TABLE t(a bigint, b bigint);
@@ -268,7 +248,7 @@ label = "cop"
 1 row in set (0.00 sec)
 ```
 
-コンピュータに`dot`プログラムがある場合は、次の方法を使用して PNG ファイルを生成できます。
+If your computer has a `dot` program, you can generate a PNG file using the following method:
 
 ```bash
 dot xx.dot -T png -O
@@ -276,7 +256,7 @@ dot xx.dot -T png -O
 The xx.dot is the result returned by the above statement.
 ```
 
-コンピュータに`dot`プログラムがない場合は、結果を[このウェブサイト](http://www.webgraphviz.com/)にコピーして樹形図を取得します。
+If your computer has no `dot` program, copy the result to [this website](http://www.webgraphviz.com/) to get a tree diagram:
 
 ![Explain Dot](/media/explain_dot.png)
 
@@ -284,70 +264,68 @@ The xx.dot is the result returned by the above statement.
 
 <div label="JSON">
 
-JSON で出力を取得するには、 `EXPLAIN`ステートメントに`FORMAT = "tidb_json"`を指定します。以下は例です。
+To get the output in JSON, specify `FORMAT = "tidb_json"` in the `EXPLAIN` statement. The following is an example:
 
 ```sql
 CREATE TABLE t(id int primary key, a int, b int, key(a));
 EXPLAIN FORMAT = "tidb_json" SELECT id FROM t WHERE a = 1;
 ```
 
-```
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| TiDB_JSON                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| [
-    {
-        "id": "Projection_4",
-        "estRows": "10.00",
-        "taskType": "root",
-        "operatorInfo": "test.t.id",
-        "subOperators": [
-            {
-                "id": "IndexReader_6",
-                "estRows": "10.00",
-                "taskType": "root",
-                "operatorInfo": "index:IndexRangeScan_5",
-                "subOperators": [
-                    {
-                        "id": "IndexRangeScan_5",
-                        "estRows": "10.00",
-                        "taskType": "cop[tikv]",
-                        "accessObject": "table:t, index:a(a)",
-                        "operatorInfo": "range:[1,1], keep order:false, stats:pseudo"
-                    }
-                ]
-            }
-        ]
-    }
-]
- |
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-1 row in set (0.01 sec)
-```
+    +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | TiDB_JSON                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+    +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | [
+        {
+            "id": "Projection_4",
+            "estRows": "10.00",
+            "taskType": "root",
+            "operatorInfo": "test.t.id",
+            "subOperators": [
+                {
+                    "id": "IndexReader_6",
+                    "estRows": "10.00",
+                    "taskType": "root",
+                    "operatorInfo": "index:IndexRangeScan_5",
+                    "subOperators": [
+                        {
+                            "id": "IndexRangeScan_5",
+                            "estRows": "10.00",
+                            "taskType": "cop[tikv]",
+                            "accessObject": "table:t, index:a(a)",
+                            "operatorInfo": "range:[1,1], keep order:false, stats:pseudo"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+     |
+    +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    1 row in set (0.01 sec)
 
-出力では、 `id` 、 `estRows` 、 `taskType` 、 `accessObject` 、および`operatorInfo`は、デフォルト形式の列と同じ意味を持ちます。 `subOperators`はサブノードを格納する配列です。サブノードのフィールドと意味は親ノードと同じです。フィールドが欠落している場合は、そのフィールドが空であることを意味します。
+In the output, `id`, `estRows`, `taskType`, `accessObject`, and `operatorInfo` have the same meaning as the columns in the default format. `subOperators` is an array that stores the sub-nodes. The fields and meanings of the sub-nodes are the same as the parent node. If a field is missing, it means that the field is empty.
 
 </div>
 
 </SimpleTab>
 
-## MySQLの互換性 {#mysql-compatibility}
+## MySQL compatibility {#mysql-compatibility}
 
--   `EXPLAIN`の形式と TiDB の潜在的な実行プランは両方とも MySQL とは大幅に異なります。
--   TiDB は`FORMAT=JSON`または`FORMAT=TREE`オプションをサポートしていません。
--   TiDB の`FORMAT=tidb_json`は、デフォルトの`EXPLAIN`の結果の JSON 形式の出力です。形式とフィールドは、MySQL の`FORMAT=JSON`出力とは異なります。
+-   Both the format of `EXPLAIN` and the potential execution plans in TiDB differ substaintially from MySQL.
+-   TiDB does not support the `FORMAT=JSON` or `FORMAT=TREE` options.
+-   `FORMAT=tidb_json` in TiDB is the JSON format output of the default `EXPLAIN` result. The format and fields are different from the `FORMAT=JSON` output in MySQL.
 
 ### <code>EXPLAIN FOR CONNECTION</code> {#code-explain-for-connection-code}
 
-`EXPLAIN FOR CONNECTION` 、接続内で現在実行されている SQL クエリまたは最後に実行された SQL クエリの実行プランを取得するために使用されます。出力形式は`EXPLAIN`と同じです。ただし、TiDB での`EXPLAIN FOR CONNECTION`の実装は MySQL での実装とは異なります。それらの違い (出力形式を除く) を以下に示します。
+`EXPLAIN FOR CONNECTION` is used to get the execution plan of the currently executed SQL query or the last executed SQL query in a connection. The output format is the same as that of `EXPLAIN`. However, the implementation of `EXPLAIN FOR CONNECTION` in TiDB is different from that in MySQL. Their differences (apart from the output format) are listed as follows:
 
--   接続がスリープ状態の場合、MySQL は空の結果を返しますが、TiDB は最後に実行されたクエリ プランを返します。
--   現在のセッションの実行プランを取得しようとすると、MySQL はエラーを返しますが、TiDB は通常どおり結果を返します。
--   MySQL では、ログイン ユーザーがクエリ対象の接続と同じであるか、ログイン ユーザーが**`PROCESS`**権限を持っている必要があります。一方、TiDB では、ログイン ユーザーがクエリ対象の接続と同じであるか、ログイン ユーザーが**`SUPER`**権限を持っている必要があります。
+-   If the connection is sleeping, MySQL returns an empty result, while TiDB returns the last executed query plan.
+-   If you try to get the execution plan of the current session, MySQL returns an error, while TiDB returns the result normally.
+-   MySQL requires the login user to be the same as the connection being queried, or the login user has the **`PROCESS`** privilege; while TiDB requires the login user to be the same as the connection being queried, or the login user has the **`SUPER`** privilege.
 
-## こちらも参照 {#see-also}
+## See also {#see-also}
 
--   [クエリ実行プランを理解する](/explain-overview.md)
--   [EXPLAINの説明](/sql-statements/sql-statement-explain-analyze.md)
--   [分析テーブル](/sql-statements/sql-statement-analyze-table.md)
--   [痕跡](/sql-statements/sql-statement-trace.md)
+-   [Understanding the Query Execution Plan](/explain-overview.md)
+-   [EXPLAIN ANALYZE](/sql-statements/sql-statement-explain-analyze.md)
+-   [ANALYZE TABLE](/sql-statements/sql-statement-analyze-table.md)
+-   [TRACE](/sql-statements/sql-statement-trace.md)

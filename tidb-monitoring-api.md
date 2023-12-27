@@ -3,84 +3,78 @@ title: TiDB Monitoring API
 summary: Learn the API of TiDB monitoring services.
 ---
 
-# TiDB モニタリング API {#tidb-monitoring-api}
+# TiDB Monitoring API {#tidb-monitoring-api}
 
-次のタイプのインターフェイスを使用して、TiDB クラスターのステータスを監視できます。
+You can use the following types of interfaces to monitor the TiDB cluster status:
 
--   [ステータスインターフェース](#use-the-status-interface) : このインターフェイスは HTTP インターフェイスを使用してコンポーネント情報を取得します。このインターフェースを使用すると、現在の TiDBサーバーの[実行ステータス](#running-status)とテーブルの[storage情報](#storage-information)を取得できます。
--   [メトリクスインターフェイス](#use-the-metrics-interface) : このインターフェイスは Prometheus を使用してコンポーネントのさまざまな操作の詳細情報を記録し、Grafana を使用してこれらのメトリクスを表示します。
+-   [The status interface](#use-the-status-interface): this interface uses the HTTP interface to get the component information. Using this interface, you can get the [running status](#running-status) of the current TiDB server and the [storage information](#storage-information) of a table.
+-   [The metrics interface](#use-the-metrics-interface): this interface uses Prometheus to record the detailed information of the various operations in components and views these metrics using Grafana.
 
-## ステータスインターフェイスを使用する {#use-the-status-interface}
+## Use the status interface {#use-the-status-interface}
 
-ステータス インターフェイスは、TiDB クラスター内の特定のコンポーネントの基本情報を監視します。また、キープアライブ メッセージの監視インターフェイスとしても機能します。さらに、配置Driver(PD) のステータス インターフェイスは、TiKV クラスター全体の詳細を取得できます。
+The status interface monitors the basic information of a specific component in the TiDB cluster. It can also act as the monitor interface for Keepalive messages. In addition, the status interface for the Placement Driver (PD) can get the details of the entire TiKV cluster.
 
-### TiDBサーバー {#tidb-server}
+### TiDB server {#tidb-server}
 
--   TiDB API アドレス: `http://${host}:${port}`
--   デフォルトのポート: `10080`
+-   TiDB API address: `http://${host}:${port}`
+-   Default port: `10080`
 
-### 運転状況 {#running-status}
+### Running status {#running-status}
 
-次の例では、 `http://${host}:${port}/status`を使用して TiDBサーバーの現在のステータスを取得し、サーバーが稼動しているかどうかを判断します。結果は**JSON**形式で返されます。
+The following example uses `http://${host}:${port}/status` to get the current status of the TiDB server and to determine whether the server is alive. The result is returned in **JSON** format.
 
 ```bash
 curl http://127.0.0.1:10080/status
 {
     connections: 0,  # The current number of clients connected to the TiDB server.
-    version: "5.7.25-TiDB-v7.1.1",  # The TiDB version number.
+    version: "5.7.25-TiDB-v7.1.3",  # The TiDB version number.
     git_hash: "778c3f4a5a716880bcd1d71b257c8165685f0d70"  # The Git Hash of the current TiDB code.
 }
 ```
 
-#### ストレージ情報 {#storage-information}
+#### Storage information {#storage-information}
 
-次の例では、 `http://${host}:${port}/schema_storage/${db}/${table}`を使用して特定のデータ テーブルのstorage情報を取得します。結果は**JSON**形式で返されます。
-
-{{< copyable "" >}}
+The following example uses `http://${host}:${port}/schema_storage/${db}/${table}` to get the storage information of the specific data table. The result is returned in **JSON** format.
 
 ```bash
 curl http://127.0.0.1:10080/schema_storage/mysql/stats_histograms
 ```
 
-```
-{
-    "table_schema": "mysql", 
-    "table_name": "stats_histograms", 
-    "table_rows": 0, 
-    "avg_row_length": 0, 
-    "data_length": 0, 
-    "max_data_length": 0, 
-    "index_length": 0, 
-    "data_free": 0
-}
-```
+    {
+        "table_schema": "mysql",
+        "table_name": "stats_histograms",
+        "table_rows": 0,
+        "avg_row_length": 0,
+        "data_length": 0,
+        "max_data_length": 0,
+        "index_length": 0,
+        "data_free": 0
+    }
 
 ```bash
 curl http://127.0.0.1:10080/schema_storage/test
 ```
 
-```
-[
-    {
-        "table_schema": "test", 
-        "table_name": "test", 
-        "table_rows": 0, 
-        "avg_row_length": 0, 
-        "data_length": 0, 
-        "max_data_length": 0, 
-        "index_length": 0, 
-        "data_free": 0
-    }
-]
-```
+    [
+        {
+            "table_schema": "test",
+            "table_name": "test",
+            "table_rows": 0,
+            "avg_row_length": 0,
+            "data_length": 0,
+            "max_data_length": 0,
+            "index_length": 0,
+            "data_free": 0
+        }
+    ]
 
-### PDサーバー {#pd-server}
+### PD server {#pd-server}
 
--   PD API アドレス: `http://${host}:${port}/pd/api/v1/${api_name}`
--   デフォルトのポート: `2379`
--   API 名の詳細: [PD API ドキュメント](https://download.pingcap.com/pd-api-v1.html)を参照
+-   PD API address: `http://${host}:${port}/pd/api/v1/${api_name}`
+-   Default port: `2379`
+-   Details about API names: see [PD API doc](https://download.pingcap.com/pd-api-v1.html)
 
-PD インターフェイスは、すべての TiKV サーバーのステータスと負荷分散に関する情報を提供します。単一ノード TiKV クラスターについては、次の例を参照してください。
+The PD interface provides the status of all the TiKV servers and the information about load balancing. See the following example for the information about a single-node TiKV cluster:
 
 ```bash
 curl http://127.0.0.1:2379/pd/api/v1/stores
@@ -114,10 +108,10 @@ curl http://127.0.0.1:2379/pd/api/v1/stores
   ]
 ```
 
-## メトリクスインターフェイスを使用する {#use-the-metrics-interface}
+## Use the metrics interface {#use-the-metrics-interface}
 
-メトリクス インターフェイスは、TiDB クラスター全体のステータスとパフォーマンスを監視します。
+The metrics interface monitors the status and performance of the entire TiDB cluster.
 
--   他の展開方法を使用する場合は、このインターフェイスを使用する前に[Prometheus と Grafana をデプロイする](/deploy-monitoring-services.md) 。
+-   If you use other deployment ways, [deploy Prometheus and Grafana](/deploy-monitoring-services.md) before using this interface.
 
-Prometheus と Grafana が正常にデプロイされたら、 [Grafana を設定する](/deploy-monitoring-services.md#configure-grafana) .
+After Prometheus and Grafana are successfully deployed, [configure Grafana](/deploy-monitoring-services.md#configure-grafana).

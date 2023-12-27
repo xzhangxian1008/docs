@@ -3,28 +3,28 @@ title: Deploy and Maintain TiCDC
 summary: Learn the hardware and software recommendations for deploying and running TiCDC, and how to deploy and maintain it.
 ---
 
-# TiCDC のデプロイと管理 {#deploy-and-maintain-ticdc}
+# Deploy and Maintain TiCDC {#deploy-and-maintain-ticdc}
 
-このドキュメントでは、ハードウェアとソフトウェアの推奨事項を含め、TiCDC クラスターを展開および維持する方法について説明します。 TiCDC を新しい TiDB クラスターとともにデプロイすることも、TiCDCコンポーネントを既存の TiDB クラスターに追加することもできます。
+This document describes how to deploy and maintain a TiCDC cluster, including the hardware and software recommendations. You can either deploy TiCDC along with a new TiDB cluster or add the TiCDC component to an existing TiDB cluster.
 
-## ソフトウェアとハ​​ードウェアの推奨事項 {#software-and-hardware-recommendations}
+## Software and hardware recommendations {#software-and-hardware-recommendations}
 
-本番環境での TiCDC のソフトウェアとハ​​ードウェアの推奨事項は次のとおりです。
+In production environments, the recommendations of software and hardware for TiCDC are as follows:
 
-| Linux OS              |    バージョン    |
-| :-------------------- | :---------: |
-| レッドハット エンタープライズ リナックス | 7.3以降のバージョン |
-| CentOS                | 7.3以降のバージョン |
+| Linux OS                 |        Version        |
+| :----------------------- | :-------------------: |
+| Red Hat Enterprise Linux | 7.3 or later versions |
+| CentOS                   | 7.3 or later versions |
 
-| CPU    | メモリー   | ディスクの種類 | 通信網                    | TiCDC クラスター インスタンスの数 (本番環境の最小要件) |
-| :----- | :----- | :------ | :--------------------- | :------------------------------- |
-| 16コア以上 | 64GB以上 | SSD     | 10ギガビットネットワークカード（2枚推奨） | 2                                |
+| CPU      | Memory | Disk        | Network                               | Number of TiCDC cluster instances (minimum requirements for production environment) |
+| :------- | :----- | :---------- | :------------------------------------ | :---------------------------------------------------------------------------------- |
+| 16 core+ | 64 GB+ | 500 GB+ SSD | 10 Gigabit network card (2 preferred） | 2                                                                                   |
 
-詳細については、 [ソフトウェアとハ​​ードウェアの推奨事項](/hardware-and-software-requirements.md)を参照してください。
+For more information, see [Software and Hardware Recommendations](/hardware-and-software-requirements.md).
 
-## TiUPを使用して TiCDC を含む新しい TiDB クラスターをデプロイ {#deploy-a-new-tidb-cluster-that-includes-ticdc-using-tiup}
+## Deploy a new TiDB cluster that includes TiCDC using TiUP {#deploy-a-new-tidb-cluster-that-includes-ticdc-using-tiup}
 
-TiUPを使用して新しい TiDB クラスターをデプロイする場合、同時に TiCDC をデプロイすることもできます。 TiUP がTiDB クラスターを開始するために使用する構成ファイルに`cdc_servers`セクションを追加するだけで済みます。以下は例です。
+When you deploy a new TiDB cluster using TiUP, you can also deploy TiCDC at the same time. You only need to add the `cdc_servers` section in the configuration file that TiUP uses to start the TiDB cluster. The following is an example:
 
 ```shell
 cdc_servers:
@@ -36,21 +36,21 @@ cdc_servers:
     data_dir: "/cdc-data"
 ```
 
-その他の参考資料:
+More references:
 
--   詳しい操作方法については[初期化設定ファイルを編集する](/production-deployment-using-tiup.md#step-3-initialize-cluster-topology-file)を参照してください。
--   設定可能なフィールドの詳細については、 [TiUPを使用して`cdc_servers`を構成する](/tiup/tiup-cluster-topology-reference.md#cdc_servers)を参照してください。
--   TiDB クラスターをデプロイする詳細な手順については、 [TiUPを使用した TiDBクラスタのデプロイ](/production-deployment-using-tiup.md)を参照してください。
+-   For detailed operations, see [Edit the initialization configuration file](/production-deployment-using-tiup.md#step-3-initialize-cluster-topology-file).
+-   For detailed configurable fields, see [Configure `cdc_servers` using TiUP](/tiup/tiup-cluster-topology-reference.md#cdc_servers).
+-   For detailed steps to deploy a TiDB cluster, see [Deploy a TiDB Cluster Using TiUP](/production-deployment-using-tiup.md).
 
-> **ノート：**
+> **Note:**
 >
-> TiCDC をインストールする前に、 TiUPコントロール マシンと TiCDC ホストの間に[パスワードなしで SSH 相互信頼と sudo を手動で設定しました](/check-before-deployment.md#manually-configure-the-ssh-mutual-trust-and-sudo-without-password)があることを確認してください。
+> Before installing TiCDC, ensure that you have [manually configured the SSH mutual trust and sudo without password](/check-before-deployment.md#manually-configure-the-ssh-mutual-trust-and-sudo-without-password) between the TiUP control machine and the TiCDC host.
 
-## TiUPを使用して、TiCDC を既存の TiDB クラスターに追加またはスケールアウトする {#add-or-scale-out-ticdc-to-an-existing-tidb-cluster-using-tiup}
+## Add or scale out TiCDC to an existing TiDB cluster using TiUP {#add-or-scale-out-ticdc-to-an-existing-tidb-cluster-using-tiup}
 
-TiCDC クラスターをスケールアウトする方法は、TiCDC クラスターをデプロイする方法と似ています。スケールアウトを実行するにはTiUPを使用することをお勧めします。
+The method of scaling out a TiCDC cluster is similar to that of deploying one. It is recommended to use TiUP to perform the scale-out.
 
-1.  TiCDC ノード情報を追加する`scale-out.yml`ファイルを作成します。以下は例です。
+1.  Create a `scale-out.yml` file to add the TiCDC node information. The following is an example:
 
     ```shell
     cdc_servers:
@@ -65,27 +65,27 @@ TiCDC クラスターをスケールアウトする方法は、TiCDC クラス�
         data_dir: /tidb-data/cdc-8300
     ```
 
-2.  TiUPコントロール マシンでスケールアウト コマンドを実行します。
+2.  Run the scale-out command on the TiUP control machine:
 
     ```shell
     tiup cluster scale-out <cluster-name> scale-out.yml
     ```
 
-その他の使用例については、 [TiCDC クラスターをスケールアウトする](/scale-tidb-using-tiup.md#scale-out-a-ticdc-cluster)を参照してください。
+For more use cases, see [Scale out a TiCDC cluster](/scale-tidb-using-tiup.md#scale-out-a-ticdc-cluster).
 
-## TiUPを使用して既存の TiDB クラスターから TiCDC を削除またはスケールインする {#delete-or-scale-in-ticdc-from-an-existing-tidb-cluster-using-tiup}
+## Delete or scale in TiCDC from an existing TiDB cluster using TiUP {#delete-or-scale-in-ticdc-from-an-existing-tidb-cluster-using-tiup}
 
-TiUP を使用して TiCDC ノードをスケールインすることをお勧めします。スケールイン コマンドは次のとおりです。
+It is recommended that you use TiUP to scale in TiCDC nodes. The following is the scale-in command:
 
 ```shell
 tiup cluster scale-in <cluster-name> --node 10.0.1.4:8300
 ```
 
-その他の使用例については、 [TiCDC クラスターでのスケールイン](/scale-tidb-using-tiup.md#scale-in-a-ticdc-cluster)を参照してください。
+For more use cases, see [Scale in a TiCDC cluster](/scale-tidb-using-tiup.md#scale-in-a-ticdc-cluster).
 
-## TiUPを使用して TiCDC をアップグレードする {#upgrade-ticdc-using-tiup}
+## Upgrade TiCDC using TiUP {#upgrade-ticdc-using-tiup}
 
-TiUP を使用して TiDB クラスターをアップグレードでき、その際に TiCDC もアップグレードされます。アップグレード コマンドを実行すると、 TiUP はTiCDCコンポーネントを自動的にアップグレードします。以下は例です。
+You can upgrade TiDB clusters using TiUP, during which TiCDC is upgraded as well. After you execute the upgrade command, TiUP automatically upgrades the TiCDC component. The following is an example:
 
 ```shell
 tiup update --self && \
@@ -93,35 +93,35 @@ tiup update --all && \
 tiup cluster upgrade <cluster-name> <version> --transfer-timeout 600
 ```
 
-> **ノート：**
+> **Note:**
 >
-> 前述のコマンドでは、 `<cluster-name>`と`<version>`実際のクラスター名とクラスターのバージョンに置き換える必要があります。たとえば、バージョンは v7.1.1 になります。
+> In the preceding command, you need to replace `<cluster-name>` and `<version>` with the actual cluster name and cluster version. For example, the version can be v7.1.3.
 
-### アップグレードに関する注意事項 {#upgrade-cautions}
+### Upgrade cautions {#upgrade-cautions}
 
-TiCDC クラスターをアップグレードするときは、次の点に注意する必要があります。
+When you upgrade a TiCDC cluster, you need to pay attention to the following:
 
--   TiCDC v4.0.2 が再構成されました`changefeed` 。詳細は[コンフィグレーションファイルの互換性に関する注意事項](/ticdc/ticdc-compatibility.md#cli-and-configuration-file-compatibility)を参照してください。
+-   TiCDC v4.0.2 reconfigured `changefeed`. For details, see [Configuration file compatibility notes](/ticdc/ticdc-compatibility.md#cli-and-configuration-file-compatibility).
 
--   アップグレード中に問題が発生した場合は、解決策について[アップグレードに関するよくある質問](/upgrade-tidb-using-tiup.md#faq)を参照してください。
+-   If you encounter any problem during the upgrade, you can refer to [upgrade FAQs](/upgrade-tidb-using-tiup.md#faq) for solutions.
 
--   v6.3.0 以降、TiCDC はローリング アップグレードをサポートしています。アップグレード中、レプリケーションのレイテンシーは安定しており、大幅に変動しません。次の条件が満たされる場合、ローリング アップグレードは自動的に有効になります。
+-   Since v6.3.0, TiCDC supports rolling upgrade. During the upgrade, the replication latency is stable and does not fluctuate significantly. Rolling upgrade takes effect automatically if the following conditions are met:
 
--   TiCDC は v6.3.0 以降です。
-    -   TiUPは v1.11.3 以降です。
-    -   少なくとも 2 つの TiCDC インスタンスがクラスター内で実行されています。
+-   TiCDC is v6.3.0 or later.
+    -   TiUP is v1.11.3 or later.
+    -   At least two TiCDC instances are running in the cluster.
 
-## TiUPを使用して TiCDC クラスター構成を変更する {#modify-ticdc-cluster-configurations-using-tiup}
+## Modify TiCDC cluster configurations using TiUP {#modify-ticdc-cluster-configurations-using-tiup}
 
-このセクションでは、 [`tiup cluster edit-config`](/tiup/tiup-component-cluster-edit-config.md)コマンドを使用して TiCDC の構成を変更する方法について説明します。次の例では、デフォルト値`gc-ttl`を`86400`から`172800` (48 時間) に変更する必要があると想定しています。
+This section describes how to use the [`tiup cluster edit-config`](/tiup/tiup-component-cluster-edit-config.md) command to modify the configurations of TiCDC. In the following example, it is assumed that you need to change the default value of `gc-ttl` from `86400` to `172800` (48 hours).
 
-1.  `tiup cluster edit-config`コマンドを実行します。 `<cluster-name>`実際のクラスター名に置き換えます。
+1.  Run the `tiup cluster edit-config` command. Replace `<cluster-name>` with the actual cluster name:
 
     ```shell
      tiup cluster edit-config <cluster-name>
     ```
 
-2.  vi エディターで、 `cdc` [`server-configs`](/tiup/tiup-cluster-topology-reference.md#server_configs)を変更します。
+2.  In the vi editor, modify the `cdc` [`server-configs`](/tiup/tiup-cluster-topology-reference.md#server_configs):
 
     ```shell
     server_configs:
@@ -136,28 +136,28 @@ TiCDC クラスターをアップグレードするときは、次の点に注�
         gc-ttl: 172800
     ```
 
-    前述のコマンドでは、 `gc-ttl`が 48 時間に設定されています。
+    In the preceding command, `gc-ttl` is set to 48 hours.
 
-3.  `tiup cluster reload -R cdc`コマンドを実行して構成を再ロードします。
+3.  Run the `tiup cluster reload -R cdc` command to reload the configuration.
 
-## TiUP を使用して TiCDC を停止および開始する {#stop-and-start-ticdc-using-tiup}
+## Stop and start TiCDC using TiUP {#stop-and-start-ticdc-using-tiup}
 
-TiUP を使用すると、TiCDC ノードを簡単に停止および起動できます。コマンドは次のとおりです。
+You can use TiUP to easily stop and start TiCDC nodes. The commands are as follows:
 
--   TiCDC を停止: `tiup cluster stop -R cdc`
--   TiCDC を開始します: `tiup cluster start -R cdc`
--   TiCDC を再起動します: `tiup cluster restart -R cdc`
+-   Stop TiCDC: `tiup cluster stop -R cdc`
+-   Start TiCDC: `tiup cluster start -R cdc`
+-   Restart TiCDC: `tiup cluster restart -R cdc`
 
-## TiCDC の TLS を有効にする {#enable-tls-for-ticdc}
+## Enable TLS for TiCDC {#enable-tls-for-ticdc}
 
-[TiDB コンポーネント間で TLS を有効にする](/enable-tls-between-components.md)を参照してください。
+See [Enable TLS Between TiDB Components](/enable-tls-between-components.md).
 
-## コマンドライン ツールを使用して TiCDC ステータスをビュー {#view-ticdc-status-using-the-command-line-tool}
+## View TiCDC status using the command-line tool {#view-ticdc-status-using-the-command-line-tool}
 
-次のコマンドを実行して、TiCDC クラスターのステータスを表示します。 `v<CLUSTER_VERSION>` TiCDC クラスターのバージョン ( `v7.1.1`など) に置き換える必要があることに注意してください。
+Run the following command to view the TiCDC cluster status. Note that you need to replace `v<CLUSTER_VERSION>` with the TiCDC cluster version, such as `v7.1.3`:
 
 ```shell
-tiup ctl:v<CLUSTER_VERSION> cdc capture list --server=http://10.0.10.25:8300
+tiup cdc:v<CLUSTER_VERSION> cli capture list --server=http://10.0.10.25:8300
 ```
 
 ```shell
@@ -177,7 +177,7 @@ tiup ctl:v<CLUSTER_VERSION> cdc capture list --server=http://10.0.10.25:8300
 ]
 ```
 
--   `id` : サービスプロセスのIDを示します。
--   `is-owner` : サービスプロセスがオーナーノードであるかどうかを示します。
--   `address` : サービスプロセスが外部とのインターフェースを提供する際に経由するアドレスを示します。
--   `cluster-id` : TiCDC クラスターの ID を示します。デフォルト値は`default`です。
+-   `id`: Indicates the ID of the service process.
+-   `is-owner`: Indicates whether the service process is the owner node.
+-   `address`: Indicates the address via which the service process provides interface to the outside.
+-   `cluster-id`: Indicates the ID of the TiCDC cluster. The default value is `default`.

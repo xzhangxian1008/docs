@@ -4,31 +4,31 @@ title: tiup dm upgrade
 
 # tiup dm upgrade {#tiup-dm-upgrade}
 
-`tiup dm upgrade`コマンドは、指定したクラスターを特定のバージョンにアップグレードするために使用されます。
+The `tiup dm upgrade` command is used to upgrade a specified cluster to a specific version.
 
-## 構文 {#syntax}
+## Syntax {#syntax}
 
 ```shell
 tiup dm upgrade <cluster-name> <version> [flags]
 ```
 
--   `<cluster-name>`は、操作対象のクラスターの名前です。クラスター名を忘れた場合は、 [`tiup dm list`](/tiup/tiup-component-dm-list.md)コマンドを使用して確認できます。
--   `<version>`は、アップグレード先のターゲット バージョンです ( `v7.1.1`など)。現在、新しいバージョンへのアップグレードのみが許可されており、以前のバージョンへのアップグレードは許可されていません。つまり、ダウングレードは許可されていません。夜間バージョンへのアップグレードも許可されていません。
+-   `<cluster-name>` is the name of the cluster to be operated on. If you forget the cluster name, you can check it using the [`tiup dm list`](/tiup/tiup-component-dm-list.md) command.
+-   `<version>` is the target version to be upgraded to, such as `v7.1.3`. Currently, only upgrading to a later version is allowed, and upgrading to an earlier version is not allowed, which means the downgrade is not allowed. Upgrading to a nightly version is not allowed either.
 
-## オプション {#options}
+## Options {#options}
 
-### &#x20;--offline {#offline}
+### --offline {#offline}
 
--   現在のクラスターがオフラインであることを宣言します。このオプションを指定すると、 TiUP DM はサービスを再起動せずに、所定のクラスター コンポーネントのバイナリ ファイルのみを置き換えます。
+-   Declares that the current cluster is offline. When this option is specified, TiUP DM only replaces the binary files of the cluster components in place without restarting the service.
 
 ### -h, --help {#h-help}
 
--   ヘルプ情報を印刷します。
--   データ型: `BOOLEAN`
--   このオプションは、値`false`を指定するとデフォルトで無効になります。このオプションを有効にするには、このオプションをコマンドに追加し、値`true`渡すか、値を渡しません。
+-   Prints the help information.
+-   Data type: `BOOLEAN`
+-   This option is disabled by default with the `false` value. To enable this option, add this option to the command, and either pass the `true` value or do not pass any value.
 
-## 出力 {#output}
+## Output {#output}
 
-サービスのアップグレード プロセスのログ。
+Log of the service upgrade process.
 
-[&lt;&lt; 前のページに戻る - TiUP DMコマンド一覧](/tiup/tiup-component-dm.md#command-list)
+[&#x3C;&#x3C; Back to the previous page - TiUP DM command list](/tiup/tiup-component-dm.md#command-list)

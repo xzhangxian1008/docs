@@ -72,10 +72,10 @@ As a distributed system, a basic TiDB test cluster usually consists of 2 TiDB in
     -   To specify the TiDB version and the number of instances of each component, run a command like this:
 
         ```shell
-        tiup playground v7.1.2 --db 2 --pd 3 --kv 3
+        tiup playground v7.1.3 --db 2 --pd 3 --kv 3
         ```
 
-        The command downloads a version cluster to the local machine and starts it, such as v7.1.2. To view the latest version, run `tiup list tidb`.
+        The command downloads a version cluster to the local machine and starts it, such as v7.1.3. To view the latest version, run `tiup list tidb`.
 
         This command returns the access methods of the cluster:
 
@@ -179,10 +179,10 @@ As a distributed system, a basic TiDB test cluster usually consists of 2 TiDB in
     -   To specify the TiDB version and the number of instances of each component, run a command like this:
 
         ```shell
-        tiup playground v7.1.2 --db 2 --pd 3 --kv 3
+        tiup playground v7.1.3 --db 2 --pd 3 --kv 3
         ```
 
-        The command downloads a version cluster to the local machine and starts it, such as v7.1.2. To view the latest version, run `tiup list tidb`.
+        The command downloads a version cluster to the local machine and starts it, such as v7.1.3. To view the latest version, run `tiup list tidb`.
 
         This command returns the access methods of the cluster:
 
@@ -394,7 +394,7 @@ Other requirements for the target machine include:
     ```
 
     -   `<cluster-name>`: Set the cluster name
-    -   `<version>`: Set the TiDB cluster version, such as `v7.1.2`. You can see all the supported TiDB versions by running the `tiup list tidb` command
+    -   `<version>`: Set the TiDB cluster version, such as `v7.1.3`. You can see all the supported TiDB versions by running the `tiup list tidb` command
     -   `-p`: Specify the password used to connect to the target machine.
 
         > **Note:**
