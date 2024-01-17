@@ -4,41 +4,46 @@ title: tiup cluster template
 
 # tiup cluster template {#tiup-cluster-template}
 
-クラスターをデプロイする前に、クラスターの[トポロジファイル](/tiup/tiup-cluster-topology-reference.md)を準備する必要があります。 TiUPにはトポロジ ファイル テンプレートが組み込まれており、このテンプレートを変更して最終的なトポロジ ファイルを作成できます。組み込みテンプレートのコンテンツを出力するには、 `tiup cluster template`コマンドを使用できます。
+Before deploying the cluster, you need to prepare a [topology file](/tiup/tiup-cluster-topology-reference.md) of the cluster. TiUP has a built-in topology file template, and you can modify this template to create the final topology file. To output the built-in template content, you can use the `tiup cluster template` command.
 
-## 構文 {#syntax}
+## Syntax {#syntax}
 
 ```shell
 tiup cluster template [flags]
 ```
 
-このオプションが指定されていない場合、出力されるデフォルトのテンプレートには次のインスタンスが含まれます。
+If this option is not specified, the output default template contains the following instances:
 
--   3 つの PD インスタンス
--   3 つの TiKV インスタンス
--   1 TiDB インスタンス
--   1 プロメテウス インスタンス
--   1 Grafana インスタンス
--   1 つのアラートマネージャー インスタンス
+-   3 PD instances
+-   3 TiKV instances
+-   1 TiDB instance
+-   1 Prometheus instance
+-   1 Grafana instance
+-   1 Alertmanager instance
 
-## オプション {#options}
+## Options {#options}
 
-### &#x20;--full {#full}
+### --full {#full}
 
--   構成可能なパラメータがコメント化された詳細なトポロジ テンプレートを出力します。このオプションを有効にするには、コマンドに追加します。
--   このオプションを指定しない場合、デフォルトで簡易トポロジテンプレートが出力されます。
+-   Outputs a detailed topology template that is commented with configurable parameters. To enable this option, add it to the command.
+-   If this option is not specified, the simple topology template is output by default.
+
+### --local {#local}
+
+-   Outputs a simple topology template for the local cluster, which can be used directly, and the `global` parameter can be adjusted as needed.
+-   This template creates a PD service, a TiDB service, a TiKV service, a monitoring service, and a Grafana service.
 
 ### --multi-dc {#multi-dc}
 
--   複数のデータセンターのトポロジテンプレートを出力します。このオプションを有効にするには、コマンドに追加します。
--   このオプションを指定しない場合、デフォルトで単一のデータセンターのトポロジ テンプレートが出力されます。
+-   Outputs the topology template of multiple data centers. To enable this option, add it to the command.
+-   If this option is not specified, the topology template of a single data center is output by default.
 
 ### -h, --help {#h-help}
 
-ヘルプ情報を印刷します。
+Prints the help information.
 
-## 出力 {#output}
+## Output {#output}
 
-指定されたオプションに従ってトポロジ テンプレートを出力します。これは、展開用のトポロジ ファイルにリダイレクトできます。
+Outputs the topology template according to the specified options, which can be redirected to the topology file for deployment.
 
-[&lt;&lt; 前のページに戻る - TiUPクラスタコマンド リスト](/tiup/tiup-component-cluster.md#command-list)
+[&#x3C;&#x3C; Back to the previous page - TiUP Cluster command list](/tiup/tiup-component-cluster.md#command-list)
