@@ -3,41 +3,41 @@ title: Configure TiFlash
 summary: Learn how to configure TiFlash.
 ---
 
-# TiFlashを構成する {#configure-tiflash}
+# Configure TiFlash {#configure-tiflash}
 
-このドキュメントでは、 TiFlashの展開と使用に関連する構成パラメータを紹介します。
+This document introduces the configuration parameters related to the deployment and use of TiFlash.
 
-## PD スケジューリングパラメータ {#pd-scheduling-parameters}
+## PD scheduling parameters {#pd-scheduling-parameters}
 
-[PD-CTL](/pd-control.md)を使用して PD スケジュール パラメータを調整できます。 tiup を使用してクラスターをデプロイおよび管理する場合は、 `pd-ctl -u <pd_ip:pd_port>`を`tiup ctl:v<CLUSTER_VERSION> pd`に置き換えることができることに注意してください。
+You can adjust the PD scheduling parameters using [pd-ctl](/pd-control.md). Note that you can use `tiup ctl:v<CLUSTER_VERSION> pd` to replace `pd-ctl -u <pd_ip:pd_port>` when using tiup to deploy and manage your cluster.
 
--   [`replica-schedule-limit`](/pd-configuration-file.md#replica-schedule-limit) : レプリカ関連のオペレーターが生成される速度を決定します。このパラメーターは、ノードのオフライン化やレプリカの追加などの操作に影響します。
+-   [`replica-schedule-limit`](/pd-configuration-file.md#replica-schedule-limit): determines the rate at which the replica-related operator is generated. The parameter affects operations such as making nodes offline and add replicas.
 
-    > **ノート：**
+    > **Note:**
     >
-    > このパラメータの値は`region-schedule-limit`より小さい必要があります。そうしないと、TiKV ノード間の通常のリージョンスケジューリングが影響を受けます。
+    > The value of this parameter should be less than that of `region-schedule-limit`. Otherwise, the normal Region scheduling among TiKV nodes is affected.
 
--   `store-balance-rate` : 各 TiKV/ TiFlashストアのリージョンがスケジュールされるレートを制限します。このパラメーターは、ストアがクラスターに新しく参加した場合にのみ有効であることに注意してください。既存のストアの設定を変更する場合は、次のコマンドを使用します。
+-   `store-balance-rate`: limits the rate at which Regions of each TiKV/TiFlash store are scheduled. Note that this parameter takes effect only when the stores have newly joined the cluster. If you want to change the setting for existing stores, use the following command.
 
-    > **ノート：**
+    > **Note:**
     >
-    > v4.0.2 以降、 `store-balance-rate`パラメータは非推奨となり、 `store limit`コマンドに変更が加えられました。詳細は[店舗限定](/configure-store-limit.md)を参照してください。
+    > Since v4.0.2, the `store-balance-rate` parameter has been deprecated and changes have been made to the `store limit` command. See [store-limit](/configure-store-limit.md) for details.
 
-    -   `pd-ctl -u <pd_ip:pd_port> store limit <store_id> <value>`コマンドを実行して、指定したストアのスケジューリング レートを設定します。 ( `store_id`を取得するには、 `pd-ctl -u <pd_ip:pd_port> store`コマンドを実行します。
-    -   指定したストアのリージョンのスケジュール レートを設定しない場合、このストアは`store-balance-rate`の設定を継承します。
-    -   `pd-ctl -u <pd_ip:pd_port> store limit`コマンドを実行すると、 `store-balance-rate`の現在の設定値を表示できます。
+    -   Execute the `pd-ctl -u <pd_ip:pd_port> store limit <store_id> <value>` command to set the scheduling rate of a specified store. (To get `store_id`, you can execute the `pd-ctl -u <pd_ip:pd_port> store` command.
+    -   If you do not set the scheduling rate for Regions of a specified store, this store inherits the setting of `store-balance-rate`.
+    -   You can execute the `pd-ctl -u <pd_ip:pd_port> store limit` command to view the current setting value of `store-balance-rate`.
 
--   [`replication.location-labels`](/pd-configuration-file.md#location-labels) : TiKV インスタンスのトポロジー関係を示します。キーの順序は、さまざまなラベルの階層関係を示します。 TiFlashが有効な場合は、 [`pd-ctl config placement-rules`](/pd-control.md#config-show--set-option-value--placement-rules)を使用してデフォルト値を設定する必要があります。詳細は[地理分散展開トポロジ](/geo-distributed-deployment-topology.md)を参照してください。
+-   [`replication.location-labels`](/pd-configuration-file.md#location-labels): indicates the topological relationship of TiKV instances. The order of the keys indicates the layering relationship of different labels. If TiFlash is enabled, you need to use [`pd-ctl config placement-rules`](/pd-control.md#config-show--set-option-value--placement-rules) to set the default value. For details, see [geo-distributed-deployment-topology](/geo-distributed-deployment-topology.md).
 
-## TiFlash設定パラメータ {#tiflash-configuration-parameters}
+## TiFlash configuration parameters {#tiflash-configuration-parameters}
 
-このセクションでは、 TiFlashの設定パラメータを紹介します。
+This section introduces the configuration parameters of TiFlash.
 
-> **ヒント：**
+> **Tip:**
 >
-> 設定項目の値を調整する必要がある場合は、 [構成を変更する](/maintain-tidb-using-tiup.md#modify-the-configuration)を参照してください。
+> If you need to adjust the value of a configuration item, refer to [Modify the configuration](/maintain-tidb-using-tiup.md#modify-the-configuration).
 
-### <code>tiflash.toml</code>ファイルを構成する {#configure-the-code-tiflash-toml-code-file}
+### Configure the <code>tiflash.toml</code> file {#configure-the-code-tiflash-toml-code-file}
 
 ```toml
 ## The listening host for supporting services such as TPC/HTTP. It is recommended to configure it as "0.0.0.0", which means to listen on all IP addresses of this machine.
@@ -46,9 +46,9 @@ listen_host = "0.0.0.0"
 ## It is **NOT** recommended to configure this port in any TiFlash deployment. (Note: Starting from TiFlash v7.1.0, TiFlash deployed by TiUP >= v1.12.5 or TiDB Operator >= v1.5.0 disables the port by default and is more secure.)
 # tcp_port = 9000
 ## The cache size limit of the metadata of a data block. Generally, you do not need to change this value.
-mark_cache_size = 5368709120
+mark_cache_size = 1073741824
 ## The cache size limit of the min-max index of a data block. Generally, you do not need to change this value.
-minmax_index_cache_size = 5368709120
+minmax_index_cache_size = 1073741824
 ## The cache size limit of the DeltaIndex. The default value is 0, which means no limit.
 delta_index_cache_size = 0
 
@@ -139,36 +139,37 @@ delta_index_cache_size = 0
     # capacity: 858993459200           # 800 GiB
 
 [flash]
-    tidb_status_addr = TiDB status port and address. # Multiple addresses are separated with commas.
-    service_addr = The listening address of TiFlash Raft services and coprocessor services.
+    ## The listening address of TiFlash coprocessor services.
+    service_addr = "0.0.0.0:3930"
 
     ## The following configuration item only takes effect for the TiFlash disaggregated storage and compute architecture mode. For details, see documentation at https://docs.pingcap.com/tidb/v7.1/tiflash-disaggregated-and-s3.
     # disaggregated_mode = tiflash_write # The supported mode is `tiflash_write` or `tiflash_compute.
 
-## Multiple TiFlash nodes elect a master to add or delete placement rules to PD,
-## and the configurations in flash.flash_cluster control this process.
-[flash.flash_cluster]
-    refresh_interval = Master regularly refreshes the valid period.
-    update_rule_interval = Master regularly gets the status of TiFlash replicas and interacts with PD.
-    master_ttl = The valid period of the elected master.
-    cluster_manager_path = The absolute path of the pd buddy directory.
-    log = The pd buddy log path.
-
 [flash.proxy]
-    addr = The listening address of proxy. If it is left empty, 127.0.0.1:20170 is used by default.
-    advertise-addr = The external access address of addr. If it is left empty, "addr" is used by default.
-    data-dir = The data storage path of proxy.
-    config = The configuration file path of proxy.
-    log-file = The log path of proxy.
-    log-level = The log level of proxy. "info" is used by default.
-    status-addr = The listening address from which the proxy pulls metrics | status information. If it is left empty, 127.0.0.1:20292 is used by default.
-    advertise-status-addr = The external access address of status-addr. If it is left empty, "status-addr" is used by default.
+    ## The listening address of proxy. If it is left empty, 127.0.0.1:20170 is used by default.
+    addr = "127.0.0.1:20170"
+    ## The external access address of addr. If it is left empty, "addr" is used by default.
+    ## Should guarantee that other nodes can access through `advertise-addr` when you deploy the cluster on multiple nodes.
+    advertise-addr = ""
+    ## The listening address from which the proxy pulls metrics or status information. If it is left empty, 127.0.0.1:20292 is used by default.
+    status-addr = "127.0.0.1:20292"
+    ## The external access address of status-addr. If it is left empty, the value of "status-addr" is used by default.
+    ## Should guarantee that other nodes can access through `advertise-status-addr` when you deploy the cluster on multiple nodes.
+    advertise-status-addr = ""
+    ## The data storage path of proxy.
+    data-dir = "/tidb-data/tiflash-9000/flash"
+    ## The configuration file path of proxy.
+    config = "/tidb-deploy/tiflash-9000/conf/tiflash-learner.toml"
+    ## The log path of proxy.
+    log-file = "/tidb-deploy/tiflash-9000/log/tiflash_tikv.log"
+    ## The log level of proxy (available options: "trace", "debug", "info", "warn", "error"). The default value is "info"
+    # log-level = "info" 
 
 [logger]
-    ## log level (available options: "trace", "debug", "info", "warn", "error"). The default value is "debug".
-    level = "debug"
-    log = TiFlash log path
-    errorlog = TiFlash error log path
+    ## log level (available options: "trace", "debug", "info", "warn", "error"). The default value is "info".
+    level = "info"
+    log = "/tidb-deploy/tiflash-9000/log/tiflash.log"
+    errorlog = "/tidb-deploy/tiflash-9000/log/tiflash_error.log"
     ## Size of a single log file. The default value is "100M".
     size = "100M"
     ## Maximum number of log files to save. The default value is 10.
@@ -253,7 +254,7 @@ delta_index_cache_size = 0
     # key_path = "/path/to/tiflash-server-key.pem"
 ```
 
-### <code>tiflash-learner.toml</code>ファイルを構成する {#configure-the-code-tiflash-learner-toml-code-file}
+### Configure the <code>tiflash-learner.toml</code> file {#configure-the-code-tiflash-learner-toml-code-file}
 
 ```toml
 [server]
@@ -296,34 +297,34 @@ delta_index_cache_size = 0
     ## Specifies the old master key when rotating the new master key. The configuration format is the same as that of `master-key`. To learn how to configure a master key, see  Configure encryption: https://docs.pingcap.com/tidb/v7.1/encryption-at-rest#configure-encryption .
 ```
 
-上記以外のパラメータはTiKVと同様です。キーが`engine`の`label`予約されており、手動で構成できないことに注意してください。
+In addition to the items above, other parameters are the same as those of TiKV. Note that the `label` whose key is `engine` is reserved and cannot be configured manually.
 
-### トポロジ ラベルごとにレプリカをスケジュールする {#schedule-replicas-by-topology-labels}
+### Schedule replicas by topology labels {#schedule-replicas-by-topology-labels}
 
-[利用可能なゾーンを設定する](/tiflash/create-tiflash-replicas.md#set-available-zones)を参照してください。
+See [Set available zones](/tiflash/create-tiflash-replicas.md#set-available-zones).
 
-### マルチディスク展開 {#multi-disk-deployment}
+### Multi-disk deployment {#multi-disk-deployment}
 
-TiFlash はマルチディスク展開をサポートしています。 TiFlashノードに複数のディスクがある場合は、次のセクションで説明するパラメータを構成することで、それらのディスクを最大限に活用できます。 TiUPに使用される TiFlash の構成テンプレートについては、 [TiFlashトポロジの複雑なテンプレート](https://github.com/pingcap/docs/blob/master/config-templates/complex-tiflash.yaml)を参照してください。
+TiFlash supports multi-disk deployment. If there are multiple disks in your TiFlash node, you can make full use of those disks by configuring the parameters described in the following sections. For TiFlash's configuration template to be used for TiUP, see [The complex template for the TiFlash topology](https://github.com/pingcap/docs/blob/master/config-templates/complex-tiflash.yaml).
 
-#### v4.0.9 より前の TiDB バージョンを使用したマルチディスク展開 {#multi-disk-deployment-with-tidb-version-earlier-than-v4-0-9}
+#### Multi-disk deployment with TiDB version earlier than v4.0.9 {#multi-disk-deployment-with-tidb-version-earlier-than-v4-0-9}
 
-v4.0.9 より前の TiDB クラスターの場合、 TiFlash はstorageエンジンのメイン データの複数のディスクへの保存のみをサポートします。 `path` ( TiUPでは`data_dir` ) および`path_realtime_mode`構成を指定することにより、複数のディスク上にTiFlashノードをセットアップできます。
+For TiDB clusters earlier than v4.0.9, TiFlash only supports storing the main data of the storage engine on multiple disks. You can set up a TiFlash node on multiple disks by specifying the `path` (`data_dir` in TiUP) and `path_realtime_mode` configuration.
 
-`path`に複数のデータstorageディレクトリがある場合は、それぞれをカンマで区切ります。たとえば、 `/nvme_ssd_a/data/tiflash,/sata_ssd_b/data/tiflash,/sata_ssd_c/data/tiflash` 。環境内に複数のディスクがある場合は、各ディレクトリを 1 つのディスクに対応させ、すべてのディスクのパフォーマンスを最大化するために、最高のパフォーマンスを持つディスクを前面に配置することをお勧めします。
+If there are multiple data storage directories in `path`, separate each with a comma. For example, `/nvme_ssd_a/data/tiflash,/sata_ssd_b/data/tiflash,/sata_ssd_c/data/tiflash`. If there are multiple disks in your environment, it is recommended that each directory corresponds to one disk and you put disks with the best performance at the front to maximize the performance of all disks.
 
-TiFlashノード上に同様の I/O メトリクスを持つディスクが複数ある場合は、 `path_realtime_mode`パラメータをデフォルト値のままにすることができます (または明示的に`false`に設定することもできます)。これは、データがすべてのstorageディレクトリに均等に分散されることを意味します。ただし、最新のデータは最初のディレクトリにのみ書き込まれるため、対応するディスクは他のディスクよりもビジーになります。
+If there are multiple disks with similar I/O metrics on your TiFlash node, you can leave the `path_realtime_mode` parameter to the default value (or you can explicitly set it to `false`). It means that data will be evenly distributed among all storage directories. However, the latest data is written only to the first directory, so the corresponding disk is busier than other disks.
 
-TiFlashノード上に異なる I/O メトリクスを持つ複数のディスクがある場合は、 `path_realtime_mode` ～ `true`を設定し、最良の I/O メトリクスを持つディスクを`path`の前に置くことをお勧めします。これは、最初のディレクトリには最新のデータのみが保存され、古いデータは他のディレクトリに均等に分散されることを意味します。この場合、最初のディレクトリの容量は、すべてのディレクトリの合計容量の 10% として計画する必要があることに注意してください。
+If there are multiple disks with different I/O metrics on your TiFlash node, it is recommended to set `path_realtime_mode` to `true` and put disks with the best I/O metrics at the front of `path`. It means that the first directory only stores the latest data, and the older data are evenly distributed among the other directories. Note that in this case, the capacity of the first directory should be planned as 10% of the total capacity of all directories.
 
-#### TiDB v4.0.9 以降を使用したマルチディスク展開 {#multi-disk-deployment-with-tidb-v4-0-9-or-later}
+#### Multi-disk deployment with TiDB v4.0.9 or later {#multi-disk-deployment-with-tidb-v4-0-9-or-later}
 
-v4.0.9 以降のバージョンの TiDB クラスターの場合、 TiFlash は、storageエンジンのメイン データと最新データの複数のディスクへの保存をサポートします。 TiFlashノードを複数のディスクにデプロイする場合は、ノードを最大限に活用するために`[storage]`セクションでstorageディレクトリを指定することをお勧めします。 v4.0.9 より前の構成 ( `path`および`path_realtime_mode` ) は引き続きサポートされることに注意してください。
+For TiDB clusters with v4.0.9 or later versions, TiFlash supports storing the main data and the latest data of the storage engine on multiple disks. If you want to deploy a TiFlash node on multiple disks, it is recommended to specify your storage directories in the `[storage]` section to make full use of your node. Note that the configurations earlier than v4.0.9 (`path` and `path_realtime_mode`) are still supported.
 
-TiFlashノード上に同様の I/O メトリクスを持つ複数のディスクがある場合は、 `storage.main.dir`リストに対応するディレクトリを指定し、 `storage.latest.dir`空のままにすることをお勧めします。 TiFlash は、 I/O プレッシャーとデータをすべてのディレクトリに分散します。
+If there are multiple disks with similar I/O metrics on your TiFlash node, it is recommended to specify corresponding directories in the `storage.main.dir` list and leave `storage.latest.dir` empty. TiFlash will distribute I/O pressure and data among all directories.
 
-TiFlashノード上に異なる I/O メトリクスを持つ複数のディスクがある場合は、 `storage.latest.dir`リストでより高いメトリクスを持つディレクトリを指定し、 `storage.main.dir`のリストでより低いメトリクスを持つディレクトリを指定することをお勧めします。たとえば、1 つの NVMe-SSD と 2 つの SATA-SSD の場合、 `storage.latest.dir` ～ `["/nvme_ssd_a/data/tiflash"]`および`storage.main.dir` ～ `["/sata_ssd_b/data/tiflash", "/sata_ssd_c/data/tiflash"]`を設定できます。 TiFlash は、 I/O プレッシャーとデータをこれら 2 つのディレクトリ リストにそれぞれ分散します。この場合、 `storage.latest.dir`という容量は、計画された総容量の 10% として計画される必要があることに注意してください。
+If there are multiple disks with different I/O metrics on your TiFlash node, it is recommended to specify directories with higher metrics in the `storage.latest.dir` list, and specify directories with lower metrics in the `storage.main.dir` list. For example, for one NVMe-SSD and two SATA-SSDs, you can set `storage.latest.dir` to `["/nvme_ssd_a/data/tiflash"]` and `storage.main.dir` to `["/sata_ssd_b/data/tiflash", "/sata_ssd_c/data/tiflash"]`. TiFlash will distribute I/O pressure and data among these two directories list respectively. Note that in this case, the capacity of `storage.latest.dir` should be planned as 10% of the total planned capacity.
 
-> **警告：**
+> **Warning:**
 >
-> `[storage]`構成は、 TiUP v1.2.5 以降でサポートされています。 TiDB クラスターのバージョンが v4.0.9 以降の場合は、 TiUP のバージョンが v1.2.5 以降であることを確認してください。そうしないと、 `[storage]`で定義したデータ ディレクトリがTiUPによって管理されなくなります。
+> The `[storage]` configuration is supported in TiUP since v1.2.5. If your TiDB cluster version is v4.0.9 or later, make sure that your TiUP version is v1.2.5 or later. Otherwise, the data directories defined in `[storage]` will not be managed by TiUP.
